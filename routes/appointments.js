@@ -1,99 +1,108 @@
 const express = require('express');
 const router = express.Router();
-const { hospitalCollection, generateToken } = require('../config/firebase');
+const { hospitalCollection } = require('../config/firebase');
 const { authenticate } = require('../middleware/auth');
 const { v4: uuidv4 } = require('uuid');
 
+// GET /api/appointments
 router.get('/', authenticate, async (req, res) => {
   try {
     const hospitalId = req.user.hospitalId;
-    const { date, doctorId, status } = req.query;
+    const { date, status, limit = 50 } = req.query;
 
-    let query = hospitalCollection(hospitalId, 'appointments').orderBy('createdAt', 'desc');
-    const snapshot = await query.limit(100).get();
+    let query = hospitalCollection(hospitalId, 'appointments').orderBy('createdAt', 'desc').limit(parseInt(limit));
+    const snapshot = await query.get();
     let appointments = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
     if (date) appointments = appointments.filter(a => a.date === date);
-    if (doctorId) appointments = appointments.filter(a => a.doctorId === doctorId);
     if (status) appointments = appointments.filter(a => a.status === status);
 
-    res.json({ appointments });
+    res.json({ appointments, total: appointments.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// POST /api/appointments - Accept name-based booking
 router.post('/', authenticate, async (req, res) => {
   try {
     const hospitalId = req.user.hospitalId;
-    const { patientId, doctorId, date, time, type = 'scheduled', notes } = req.body;
+    const {
+      patientId, patientName, doctorId, doctorName,
+      date, time, type = 'scheduled', notes
+    } = req.body;
 
-    if (!patientId || !doctorId || !date) {
+    if ((!patientId && !patientName) || (!doctorId && !doctorName) || !date) {
       return res.status(400).json({ error: 'Patient, doctor and date required' });
     }
 
-    // Get patient and doctor info
-    const [patientDoc, doctorDoc] = await Promise.all([
-      hospitalCollection(hospitalId, 'patients').doc(patientId).get(),
-      hospitalCollection(hospitalId, 'doctors').doc(doctorId).get()
-    ]);
+    let pName = patientName, dName = doctorName;
+    let pPhone = '', pUHID = '', dSpec = '', dFee = 0;
 
-    if (!patientDoc.exists) return res.status(404).json({ error: 'Patient not found' });
-    if (!doctorDoc.exists) return res.status(404).json({ error: 'Doctor not found' });
+    // Try to get from DB if IDs provided
+    if (patientId) {
+      try {
+        const pd = await hospitalCollection(hospitalId, 'patients').doc(patientId).get();
+        if (pd.exists) { const p = pd.data(); pName = p.name; pPhone = p.phone; pUHID = p.uhid; }
+      } catch(e) {}
+    }
+    if (doctorId) {
+      try {
+        const dd = await hospitalCollection(hospitalId, 'doctors').doc(doctorId).get();
+        if (dd.exists) { const d = dd.data(); dName = d.name; dSpec = d.specialization; dFee = d.consultationFee; }
+      } catch(e) {}
+    }
 
-    // Get token number for the day
-    const existingSnap = await hospitalCollection(hospitalId, 'appointments')
-      .where('doctorId', '==', doctorId)
-      .where('date', '==', date).get();
-
-    const tokenNumber = existingSnap.size + 1;
+    // Token number for day
+    let tokenNumber = 1;
+    try {
+      const snap = await hospitalCollection(hospitalId, 'appointments').where('date', '==', date).get();
+      tokenNumber = snap.size + 1;
+    } catch(e) {}
 
     const id = uuidv4();
-    const patient = patientDoc.data();
-    const doctor = doctorDoc.data();
-
     const appointment = {
-      id, patientId, doctorId, date, time: time || '',
+      id, date, time: time || '',
+      patientId: patientId || null, patientName: pName, patientPhone: pPhone, patientUHID: pUHID,
+      doctorId: doctorId || null, doctorName: dName, doctorSpecialization: dSpec, consultationFee: dFee,
       type, notes: notes || '',
       tokenNumber, status: 'scheduled',
-      patientName: patient.name, patientPhone: patient.phone, patientUHID: patient.uhid,
-      doctorName: doctor.name, doctorSpecialization: doctor.specialization,
-      consultationFee: doctor.consultationFee,
       hospitalId,
       createdAt: new Date().toISOString(),
       createdBy: req.user.uid
     };
 
     await hospitalCollection(hospitalId, 'appointments').doc(id).set(appointment);
-    res.status(201).json({ appointment });
+    res.status(201).json({ appointment, message: 'Appointment booked' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// PUT /api/appointments/:id
 router.put('/:id', authenticate, async (req, res) => {
   try {
     const hospitalId = req.user.hospitalId;
-    const updates = { ...req.body, updatedAt: new Date().toISOString() };
-    delete updates.id;
-    await hospitalCollection(hospitalId, 'appointments').doc(req.params.id).update(updates);
+    const doc = await hospitalCollection(hospitalId, 'appointments').doc(req.params.id).get();
+    if (!doc.exists) return res.status(404).json({ error: 'Appointment not found' });
+    await hospitalCollection(hospitalId, 'appointments').doc(req.params.id).update({
+      ...req.body, updatedAt: new Date().toISOString()
+    });
     res.json({ message: 'Appointment updated' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// DELETE /api/appointments/:id
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     const hospitalId = req.user.hospitalId;
-    await hospitalCollection(hospitalId, 'appointments').doc(req.params.id).update({
-      status: 'cancelled', cancelledAt: new Date().toISOString()
-    });
-    res.json({ message: 'Appointment cancelled' });
+    await hospitalCollection(hospitalId, 'appointments').doc(req.params.id).delete();
+    res.json({ message: 'Appointment deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 module.exports = router;
-
