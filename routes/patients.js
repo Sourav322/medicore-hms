@@ -1,44 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const { hospitalCollection, generateUHID } = require('../config/firebase');
-const { authenticate } = require('../middleware/auth');
 const QRCode = require('qrcode');
 const { v4: uuidv4 } = require('uuid');
 
-// GET /api/patients - List patients
-router.get('/', authenticate, async (req, res) => {
+// GET /api/patients
+router.get('/', async (req, res) => {
   try {
-    const { search, limit = 50, page = 1 } = req.query;
-    const hospitalId = req.user.hospitalId;
+    const hospitalId = "demo-hospital";
+    const snapshot = await hospitalCollection(hospitalId, 'patients')
+      .orderBy('createdAt', 'desc')
+      .limit(50)
+      .get();
 
-    let query = hospitalCollection(hospitalId, 'patients').orderBy('createdAt', 'desc');
-
-    const snapshot = await query.limit(parseInt(limit)).get();
-    let patients = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    // Client-side search filter
-    if (search) {
-      const s = search.toLowerCase();
-      patients = patients.filter(p =>
-        p.name?.toLowerCase().includes(s) ||
-        p.phone?.includes(s) ||
-        p.uhid?.toLowerCase().includes(s)
-      );
-    }
+    const patients = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
     res.json({ patients, total: patients.length });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/patients - Add patient
-router.post('/', authenticate, async (req, res) => {
+// POST /api/patients
+router.post('/', async (req, res) => {
   try {
-    const hospitalId = req.user.hospitalId;
+
+    const hospitalId = "demo-hospital";
+
     const {
-      name, age, gender, phone, address, bloodGroup,
-      allergyNotes, email, emergencyContact, emergencyPhone
+      name, age, gender, phone
     } = req.body;
 
     if (!name || !phone) {
@@ -48,84 +39,92 @@ router.post('/', authenticate, async (req, res) => {
     const id = uuidv4();
     const uhid = generateUHID(hospitalId);
 
-    // Generate QR code
     const qrData = JSON.stringify({ uhid, name, phone, hospitalId });
     const qrCode = await QRCode.toDataURL(qrData);
 
     const patient = {
-      id, uhid, name, age: parseInt(age) || 0, gender, phone,
-      address: address || '', bloodGroup: bloodGroup || '',
-      allergyNotes: allergyNotes || '', email: email || '',
-      emergencyContact: emergencyContact || '',
-      emergencyPhone: emergencyPhone || '',
-      qrCode, hospitalId,
+      id,
+      uhid,
+      name,
+      age: parseInt(age) || 0,
+      gender,
+      phone,
+      hospitalId,
+      qrCode,
       status: 'active',
-      createdAt: new Date().toISOString(),
-      createdBy: req.user.uid
+      createdAt: new Date().toISOString()
     };
 
     await hospitalCollection(hospitalId, 'patients').doc(id).set(patient);
 
     res.status(201).json({ patient });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/patients/:id
-router.get('/:id', authenticate, async (req, res) => {
+// GET patient by id
+router.get('/:id', async (req, res) => {
   try {
-    const hospitalId = req.user.hospitalId;
-    const doc = await hospitalCollection(hospitalId, 'patients').doc(req.params.id).get();
 
-    if (!doc.exists) return res.status(404).json({ error: 'Patient not found' });
+    const hospitalId = "demo-hospital";
 
-    // Get medical history
-    const historySnap = await hospitalCollection(hospitalId, 'opd_records')
-      .where('patientId', '==', req.params.id)
-      .orderBy('createdAt', 'desc').limit(20).get();
+    const doc = await hospitalCollection(hospitalId, 'patients')
+      .doc(req.params.id)
+      .get();
 
-    const history = historySnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
 
-    // Get appointments
-    const apptSnap = await hospitalCollection(hospitalId, 'appointments')
-      .where('patientId', '==', req.params.id)
-      .orderBy('createdAt', 'desc').limit(10).get();
+    res.json({ patient: { id: doc.id, ...doc.data() } });
 
-    const appointments = apptSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    res.json({ patient: { id: doc.id, ...doc.data() }, history, appointments });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// PUT /api/patients/:id
-router.put('/:id', authenticate, async (req, res) => {
+// UPDATE patient
+router.put('/:id', async (req, res) => {
   try {
-    const hospitalId = req.user.hospitalId;
-    const updates = { ...req.body, updatedAt: new Date().toISOString() };
-    delete updates.id; delete updates.uhid; delete updates.hospitalId;
 
-    await hospitalCollection(hospitalId, 'patients').doc(req.params.id).update(updates);
+    const hospitalId = "demo-hospital";
+
+    const updates = {
+      ...req.body,
+      updatedAt: new Date().toISOString()
+    };
+
+    await hospitalCollection(hospitalId, 'patients')
+      .doc(req.params.id)
+      .update(updates);
+
     res.json({ message: 'Patient updated' });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// DELETE /api/patients/:id
-router.delete('/:id', authenticate, async (req, res) => {
+// DELETE patient
+router.delete('/:id', async (req, res) => {
   try {
-    const hospitalId = req.user.hospitalId;
-    await hospitalCollection(hospitalId, 'patients').doc(req.params.id).update({
-      status: 'inactive', deletedAt: new Date().toISOString()
-    });
+
+    const hospitalId = "demo-hospital";
+
+    await hospitalCollection(hospitalId, 'patients')
+      .doc(req.params.id)
+      .update({
+        status: 'inactive',
+        deletedAt: new Date().toISOString()
+      });
+
     res.json({ message: 'Patient deactivated' });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 module.exports = router;
-
