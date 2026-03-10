@@ -1,172 +1,1083 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MediCore HMS</title><style>
-
-body{
-font-family:system-ui;
-margin:0;
-background:#f1f5f9;
-color:#0f172a;
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MediCore HMS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0f1e;
+  --bg2:#111827;
+  --bg3:#1e2a3a;
+  --card:#162032;
+  --border:#1e3a5f;
+  --accent:#0ea5e9;
+  --accent2:#06b6d4;
+  --green:#10b981;
+  --red:#ef4444;
+  --orange:#f59e0b;
+  --purple:#8b5cf6;
+  --text:#f0f6ff;
+  --text2:#94a3b8;
+  --text3:#64748b;
+  --sidebar:240px;
 }
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+a{text-decoration:none;color:inherit;}
+button{cursor:pointer;font-family:inherit;}
+input,select,textarea{font-family:inherit;}
 
-header{
-background:#0f172a;
-color:white;
-padding:14px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-font-weight:700;
-}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-.container{
-padding:16px;
-max-width:1100px;
-margin:auto;
-}
+/* ── LOGIN PAGE ── */
+#lp{display:flex;min-height:100vh;align-items:center;justify-content:center;background:var(--bg);padding:16px;}
+#lp::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 30% 20%,rgba(14,165,233,.08) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(6,182,212,.06) 0%,transparent 50%);pointer-events:none;}
+.lp-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 36px;width:100%;max-width:420px;position:relative;z-index:1;}
+.lp-logo{text-align:center;margin-bottom:32px;}
+.lp-logo .ico{width:64px;height:64px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;}
+.lp-logo h1{font-size:24px;font-weight:700;letter-spacing:-.5px;}
+.lp-logo p{color:var(--text2);font-size:13px;margin-top:4px;}
+.tab-row{display:flex;background:var(--bg2);border-radius:10px;padding:3px;margin-bottom:24px;}
+.tab-btn{flex:1;padding:8px;border:none;background:transparent;color:var(--text2);border-radius:8px;font-size:14px;font-weight:500;transition:.2s;}
+.tab-btn.active{background:var(--accent);color:#fff;}
+.lbl{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.fld{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;outline:none;transition:.2s;margin-bottom:14px;}
+.fld:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(14,165,233,.15);}
+.fld::placeholder{color:var(--text3);}
+.btn-primary{width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:600;letter-spacing:.3px;transition:.2s;margin-top:4px;}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);}
+.btn-primary:disabled{opacity:.6;transform:none;cursor:not-allowed;}
+.err-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 12px;color:#fca5a5;font-size:13px;margin-bottom:12px;display:none;}
 
-.card{
-background:white;
-border-radius:12px;
-padding:16px;
-margin-bottom:16px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
-}
+/* ── APP LAYOUT ── */
+#app{display:none;height:100vh;overflow:hidden;}
+.layout{display:flex;height:100vh;}
 
-input,select{
-width:100%;
-padding:10px;
-border-radius:8px;
-border:1px solid #ddd;
-margin-top:6px;
-margin-bottom:10px;
-}
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:fixed;left:0;top:0;z-index:200;transition:.3s;}
+.sb-head{padding:20px 16px;border-bottom:1px solid var(--border);}
+.sb-brand{display:flex;align-items:center;gap:10px;}
+.sb-brand .ico{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.sb-brand-text h2{font-size:15px;font-weight:700;}
+.sb-brand-text p{font-size:11px;color:var(--text2);}
+.sb-user{padding:12px 16px;border-bottom:1px solid var(--border);}
+.sb-user-inner{display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:10px 12px;}
+.sb-av{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.sb-user-info{min-width:0;}
+.sb-user-info .name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-user-info .role{font-size:11px;color:var(--text2);}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 10px;}
+.nav-sec{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:12px 8px 6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:.15s;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:rgba(14,165,233,.15);color:var(--accent);}
+.nav-item .ni{width:18px;text-align:center;font-size:15px;}
+.sb-foot{padding:12px;border-top:1px solid var(--border);}
+.btn-logout{width:100%;padding:9px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:#fca5a5;font-size:13px;font-weight:500;}
+.btn-logout:hover{background:rgba(239,68,68,.2);}
 
-button{
-padding:10px 16px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-background:#0284c7;
-color:white;
-font-weight:600;
-}
+/* MAIN */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.tb-left{display:flex;align-items:center;gap:12px;}
+.hamburger{display:none;background:none;border:none;color:var(--text);font-size:20px;padding:4px;}
+.tb-title{font-size:16px;font-weight:600;}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-badge{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;color:var(--text2);}
+.content{flex:1;overflow-y:auto;padding:20px;}
 
-button:hover{
-background:#0369a1;
-}
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;backdrop-filter:blur(2px);}
+.overlay.open{display:block;}
 
-table{
-width:100%;
-border-collapse:collapse;
-}
+/* CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;opacity:.08;transform:translate(20px,-20px);}
+.stat-card.blue::before{background:var(--accent);}
+.stat-card.green::before{background:var(--green);}
+.stat-card.orange::before{background:var(--orange);}
+.stat-card.purple::before{background:var(--purple);}
+.sc-icon{font-size:22px;margin-bottom:10px;}
+.sc-val{font-size:28px;font-weight:700;line-height:1;}
+.sc-lbl{font-size:12px;color:var(--text2);margin-top:4px;}
+.sc-trend{font-size:11px;margin-top:6px;}
+.sc-trend.up{color:var(--green);}
+.sc-trend.dn{color:var(--red);}
 
-th,td{
-padding:10px;
-border-bottom:1px solid #eee;
-text-align:left;
-}
+/* TABLES */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.tw-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.tw-title{font-size:14px;font-weight:600;}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;}
+.search-box input{background:none;border:none;outline:none;color:var(--text);font-size:13px;width:180px;}
+.search-box input::placeholder{color:var(--text3);}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:10px 16px;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);background:var(--bg2);}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(30,58,95,.4);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(14,165,233,.03);}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge.green{background:rgba(16,185,129,.15);color:#34d399;}
+.badge.red{background:rgba(239,68,68,.15);color:#f87171;}
+.badge.orange{background:rgba(245,158,11,.15);color:#fbbf24;}
+.badge.blue{background:rgba(14,165,233,.15);color:#38bdf8;}
+.badge.purple{background:rgba(139,92,246,.15);color:#a78bfa;}
+.btn-sm{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:500;border:none;cursor:pointer;transition:.15s;}
+.btn-sm.primary{background:rgba(14,165,233,.2);color:var(--accent);}
+.btn-sm.primary:hover{background:rgba(14,165,233,.3);}
+.btn-sm.danger{background:rgba(239,68,68,.15);color:#f87171;}
+.btn-sm.danger:hover{background:rgba(239,68,68,.25);}
+.btn-sm.green{background:rgba(16,185,129,.15);color:#34d399;}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text2);}
+.empty-state .ei{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:14px;}
 
-th{
-background:#f8fafc;
-font-size:12px;
-}
+/* MODALS */
+.modal{display:none;position:fixed;inset:0;z-index:300;align-items:center;justify-content:center;padding:16px;}
+.modal.open{display:flex;}
+.modal-bg{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;position:relative;z-index:1;}
+.modal-head{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:16px;font-weight:600;}
+.modal-close{background:none;border:none;color:var(--text2);font-size:20px;padding:4px;line-height:1;}
+.modal-body{padding:20px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-group{margin-bottom:14px;}
+.btn-add{padding:10px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:600;width:100%;margin-top:4px;}
+.btn-add:hover{opacity:.9;}
 
+/* PAGE SECTIONS */
+.page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.page-title{font-size:20px;font-weight:700;}
+.btn-new{display:flex;align-items:center;gap:6px;padding:9px 18px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;}
+
+/* DASHBOARD CHARTS */
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:16px;}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.chart-title{font-size:14px;font-weight:600;margin-bottom:16px;}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;}
+.bar-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar{width:100%;background:linear-gradient(to top,var(--accent),var(--accent2));border-radius:4px 4px 0 0;transition:.3s;min-height:4px;}
+.bar-lbl{font-size:10px;color:var(--text3);}
+.bar-val{font-size:10px;color:var(--text2);}
+.quick-stats{display:flex;flex-direction:column;gap:12px;}
+.qs-item{display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg3);border-radius:10px;}
+.qs-label{font-size:12px;color:var(--text2);}
+.qs-val{font-size:16px;font-weight:700;}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--text2);}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin-right:10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* TOAST */
+#tst{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.tsi{padding:10px 16px;border-radius:10px;font-size:13px;color:#fff;font-weight:500;animation:slideIn .3s ease;max-width:300px;box-shadow:0 4px 20px rgba(0,0,0,.4);}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.tsi.fade{opacity:0;transition:.3s;}
+
+/* RESPONSIVE */
 @media(max-width:768px){
+  :root{--sidebar:0px;}
+  .sidebar{transform:translateX(-240px);width:240px;}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .hamburger{display:flex;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .chart-grid{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+  .content{padding:14px;}
+  .search-box input{width:120px;}
+  table{font-size:12px;}
+  th,td{padding:8px 10px;}
+}
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .lp-box{padding:28px 20px;}
+}
+@media(min-width:1200px){
+  .stat-grid{grid-template-columns:repeat(4,1fr);}
+}
+</style>
+</head>
+<body>
 
-table{
-font-size:12px;
+<!-- TOAST -->
+<div id="tst"></div>
+
+<!-- LOGIN PAGE -->
+<div id="lp">
+  <div class="lp-box">
+    <div class="lp-logo">
+      <div class="ico">🏥</div>
+      <h1>MediCore HMS</h1>
+      <p>Hospital Management System</p>
+    </div>
+    <div class="tab-row">
+      <button class="tab-btn active" id="t-si" onclick="showTab('si')">Sign In</button>
+      <button class="tab-btn" id="t-rg" onclick="showTab('rg')">Register Hospital</button>
+    </div>
+
+    <!-- SIGN IN -->
+    <div id="f-si">
+      <div id="si-er" class="err-box"></div>
+      <label class="lbl">Email</label>
+      <input id="si-em" class="fld" type="email" placeholder="admin@hospital.com" autocomplete="email">
+      <label class="lbl">Password</label>
+      <input id="si-pw" class="fld" type="password" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn-primary" id="btn-li">🔑 Sign In</button>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="f-rg" style="display:none">
+      <div id="rg-er" class="err-box"></div>
+      <label class="lbl">Your Name</label>
+      <input id="rg-na" class="fld" placeholder="Dr. John Smith">
+      <label class="lbl">Hospital Name</label>
+      <input id="rg-ho" class="fld" placeholder="City General Hospital">
+      <label class="lbl">Email</label>
+      <input id="rg-em" class="fld" type="email" placeholder="admin@hospital.com" autocomplete="email">
+      <label class="lbl">Password</label>
+      <input id="rg-pw" class="fld" type="password" placeholder="Min 6 characters" autocomplete="new-password">
+      <button class="btn-primary" id="btn-rg">🏥 Register Hospital</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="ov" onclick="closeSB()"></div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sb-head">
+        <div class="sb-brand">
+          <div class="ico">🏥</div>
+          <div class="sb-brand-text">
+            <h2>MediCore</h2>
+            <p id="sb-hn">Hospital</p>
+          </div>
+        </div>
+      </div>
+      <div class="sb-user">
+        <div class="sb-user-inner">
+          <div class="sb-av" id="sb-av">A</div>
+          <div class="sb-user-info">
+            <div class="name" id="sb-un">User</div>
+            <div class="role" id="sb-ro">Admin</div>
+          </div>
+        </div>
+      </div>
+      <div class="sb-nav">
+        <div class="nav-sec">Main</div>
+        <button class="nav-item active" onclick="nav('dashboard')"><span class="ni">📊</span>Dashboard</button>
+        <button class="nav-item" onclick="nav('patients')"><span class="ni">👥</span>Patients</button>
+        <button class="nav-item" onclick="nav('doctors')"><span class="ni">👨‍⚕️</span>Doctors</button>
+        <button class="nav-item" onclick="nav('appointments')"><span class="ni">📅</span>Appointments</button>
+        <div class="nav-sec">Clinical</div>
+        <button class="nav-item" onclick="nav('opd')"><span class="ni">🏃</span>OPD</button>
+        <button class="nav-item" onclick="nav('ipd')"><span class="ni">🛏️</span>IPD</button>
+        <button class="nav-item" onclick="nav('lab')"><span class="ni">🧪</span>Laboratory</button>
+        <div class="nav-sec">Management</div>
+        <button class="nav-item" onclick="nav('billing')"><span class="ni">💰</span>Billing</button>
+        <button class="nav-item" onclick="nav('staff')"><span class="ni">👔</span>Staff</button>
+        <button class="nav-item" onclick="nav('inventory')"><span class="ni">📦</span>Inventory</button>
+        <button class="nav-item" onclick="nav('reports')"><span class="ni">📈</span>Reports</button>
+        <button class="nav-item" onclick="nav('settings')"><span class="ni">⚙️</span>Settings</button>
+      </div>
+      <div class="sb-foot">
+        <button class="btn-logout" onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <div class="tb-left">
+          <button class="hamburger" onclick="toggleSB()">☰</button>
+          <span class="tb-title" id="tb-title">Dashboard</span>
+        </div>
+        <div class="tb-right">
+          <span class="tb-badge" id="tb-date"></span>
+        </div>
+      </div>
+      <div class="content" id="content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PATIENT MODAL -->
+<div class="modal" id="m-addpt">
+  <div class="modal-bg" onclick="closeM('m-addpt')"></div>
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">➕ Add Patient</span>
+      <button class="modal-close" onclick="closeM('m-addpt')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="apt-er" class="err-box"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="lbl">Full Name *</label><input id="apt-nm" class="fld" placeholder="Patient Name"></div>
+        <div class="form-group"><label class="lbl">Age *</label><input id="apt-ag" class="fld" type="number" placeholder="25"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="lbl">Gender *</label>
+          <select id="apt-gn" class="fld"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
+        </div>
+        <div class="form-group"><label class="lbl">Blood Group</label>
+          <select id="apt-bl" class="fld"><option value="">Select</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="lbl">Phone *</label><input id="apt-ph" class="fld" type="tel" placeholder="9876543210"></div>
+      <div class="form-group"><label class="lbl">Address</label><input id="apt-ad" class="fld" placeholder="City, State"></div>
+      <button class="btn-add" id="btn-apt">Save Patient</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD DOCTOR MODAL -->
+<div class="modal" id="m-adddr">
+  <div class="modal-bg" onclick="closeM('m-adddr')"></div>
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">➕ Add Doctor</span>
+      <button class="modal-close" onclick="closeM('m-adddr')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="adr-er" class="err-box"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="lbl">Full Name *</label><input id="adr-nm" class="fld" placeholder="Dr. Name"></div>
+        <div class="form-group"><label class="lbl">Specialization *</label><input id="adr-sp" class="fld" placeholder="Cardiologist"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="lbl">Department</label><input id="adr-dp" class="fld" placeholder="Cardiology"></div>
+        <div class="form-group"><label class="lbl">Consultation Fee</label><input id="adr-fe" class="fld" type="number" placeholder="500"></div>
+      </div>
+      <div class="form-group"><label class="lbl">Phone</label><input id="adr-ph" class="fld" type="tel" placeholder="9876543210"></div>
+      <button class="btn-add" id="btn-adr">Save Doctor</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD APPOINTMENT MODAL -->
+<div class="modal" id="m-addap">
+  <div class="modal-bg" onclick="closeM('m-addap')"></div>
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">📅 Book Appointment</span>
+      <button class="modal-close" onclick="closeM('m-addap')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="lbl">Patient Name *</label><input id="aap-pt" class="fld" placeholder="Patient name"></div>
+      <div class="form-group"><label class="lbl">Doctor *</label><input id="aap-dr" class="fld" placeholder="Doctor name"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="lbl">Date *</label><input id="aap-dt" class="fld" type="date"></div>
+        <div class="form-group"><label class="lbl">Time *</label><input id="aap-tm" class="fld" type="time"></div>
+      </div>
+      <div class="form-group"><label class="lbl">Notes</label><input id="aap-nt" class="fld" placeholder="Reason for visit"></div>
+      <button class="btn-add" id="btn-aap">Book Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD BILL MODAL -->
+<div class="modal" id="m-addbill">
+  <div class="modal-bg" onclick="closeM('m-addbill')"></div>
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">💰 New Bill</span>
+      <button class="modal-close" onclick="closeM('m-addbill')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="lbl">Patient Name *</label><input id="abl-pt" class="fld" placeholder="Patient name"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="lbl">Type *</label>
+          <select id="abl-ty" class="fld"><option>OPD</option><option>IPD</option><option>Lab</option><option>Pharmacy</option></select>
+        </div>
+        <div class="form-group"><label class="lbl">Amount *</label><input id="abl-am" class="fld" type="number" placeholder="1000"></div>
+      </div>
+      <div class="form-group"><label class="lbl">Payment Mode</label>
+        <select id="abl-pm" class="fld"><option>Cash</option><option>UPI</option><option>Card</option><option>Insurance</option></select>
+      </div>
+      <button class="btn-add" id="btn-abl">Create Bill</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var API_URL = 'https://web-production-d347.up.railway.app/api';
+var S = { user:null, hospital:null, page:'dashboard' };
+
+// ── API ──
+function api(method, path, body){
+  var headers = {'Content-Type':'application/json'};
+  if(S.user && S.user.token) headers['Authorization'] = 'Bearer ' + S.user.token;
+  return fetch(API_URL + path, {
+    method: method,
+    headers: headers,
+    body: body ? JSON.stringify(body) : undefined
+  }).then(function(r){
+    if(!r.ok) return r.json().then(function(e){ throw new Error(e.error || e.message || 'Error'); });
+    return r.json();
+  });
 }
 
+// ── UTILS ──
+function ge(id){ return document.getElementById(id); }
+function cur(v){ return '₹' + (v||0).toLocaleString('en-IN'); }
+function today(){ return new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function toast(msg,t){
+  var colors = {s:'#10b981',e:'#ef4444',i:'#0284c7',w:'#f59e0b'};
+  var d = document.createElement('div');
+  d.className = 'tsi';
+  d.style.background = colors[t||'s'] || colors.s;
+  d.textContent = msg;
+  ge('tst').appendChild(d);
+  setTimeout(function(){ d.classList.add('fade'); }, 2800);
+  setTimeout(function(){ if(d.parentNode) d.parentNode.removeChild(d); }, 3200);
+}
+function openM(id){ var m=ge(id); if(m) m.classList.add('open'); }
+function closeM(id){ var m=ge(id); if(m) m.classList.remove('open'); }
+function showErr(id, msg){ var e=ge(id); if(e){ e.textContent=msg; e.style.display='block'; } }
+function hideErr(id){ var e=ge(id); if(e) e.style.display='none'; }
+
+// ── AUTH ──
+function showTab(t){
+  ge('f-si').style.display = t==='si' ? '' : 'none';
+  ge('f-rg').style.display = t==='rg' ? '' : 'none';
+  ge('t-si').classList.toggle('active', t==='si');
+  ge('t-rg').classList.toggle('active', t==='rg');
 }
 
-</style></head><body><header>
-<span>🏥 MediCore HMS</span>
-<span id="status">Connecting...</span>
-</header><div class="container"><div class="card"><h3>Add Patient</h3><input id="name" placeholder="Patient Name">
-<input id="age" placeholder="Age" type="number"><select id="gender">
-<option value="">Gender</option>
-<option>Male</option>
-<option>Female</option>
-<option>Other</option>
-</select><input id="phone" placeholder="Phone"><button onclick="addPatient()">Save Patient</button>
-
-</div><div class="card"><h3>Patients</h3><table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Age</th>
-<th>Gender</th>
-<th>Phone</th>
-</tr>
-</thead><tbody id="patients"></tbody></table></div></div><script>
-
-const API = "https://web-production-d347.up.railway.app/api"
-
-async function loadPatients(){
-
-try{
-
-const res = await fetch(API+"/patients")
-const data = await res.json()
-
-document.getElementById("status").innerText="Connected"
-
-const table=document.getElementById("patients")
-
-table.innerHTML=""
-
-data.patients.forEach(p=>{
-
-table.innerHTML+=`
-<tr>
-<td>${p.name}</td>
-<td>${p.age}</td>
-<td>${p.gender}</td>
-<td>${p.phone}</td>
-</tr>
-`
-
-})
-
-}catch(e){
-
-document.getElementById("status").innerText="Server Offline"
-
+function doLogin(){
+  var em = (ge('si-em').value||'').trim();
+  var pw = ge('si-pw').value||'';
+  hideErr('si-er');
+  if(!em||!pw){ showErr('si-er','Enter email and password'); return; }
+  var btn = ge('btn-li');
+  btn.textContent = '⏳ Signing in...'; btn.disabled = true;
+  api('POST','/auth/login',{email:em, password:pw})
+    .then(function(res){
+      S.user = Object.assign(res.user, {token: res.token});
+      S.hospital = res.hospital;
+      try{ localStorage.setItem('mc_sess', JSON.stringify({u:S.user, h:S.hospital})); }catch(x){}
+      launchApp();
+      toast('Welcome back, ' + (res.user.name||'') + '! 👋','s');
+    })
+    .catch(function(err){
+      showErr('si-er', err.message||'Login failed. Check email/password.');
+    })
+    .finally(function(){ btn.textContent='🔑 Sign In'; btn.disabled=false; });
 }
 
+function doRegister(){
+  var na = (ge('rg-na').value||'').trim();
+  var ho = (ge('rg-ho').value||'').trim();
+  var em = (ge('rg-em').value||'').trim();
+  var pw = ge('rg-pw').value||'';
+  hideErr('rg-er');
+  if(!na||!ho||!em||!pw){ showErr('rg-er','All fields are required'); return; }
+  if(pw.length < 6){ showErr('rg-er','Password must be at least 6 characters'); return; }
+  var btn = ge('btn-rg');
+  btn.textContent = '⏳ Registering...'; btn.disabled = true;
+  api('POST','/auth/register-hospital',{adminName:na, hospitalName:ho, email:em, password:pw})
+    .then(function(res){
+      S.user = Object.assign(res.user, {token: res.token});
+      S.hospital = res.hospital;
+      try{ localStorage.setItem('mc_sess', JSON.stringify({u:S.user, h:S.hospital})); }catch(x){}
+      launchApp();
+      toast('Hospital registered! Welcome, ' + na + '! 🏥','s');
+    })
+    .catch(function(err){
+      showErr('rg-er', err.message||'Registration failed');
+    })
+    .finally(function(){ btn.textContent='🏥 Register Hospital'; btn.disabled=false; });
 }
 
-async function addPatient(){
-
-const body={
-name:document.getElementById("name").value,
-age:document.getElementById("age").value,
-gender:document.getElementById("gender").value,
-phone:document.getElementById("phone").value
+function doLogout(){
+  try{ localStorage.removeItem('mc_sess'); }catch(x){}
+  S.user = null; S.hospital = null;
+  ge('app').style.display = 'none';
+  ge('lp').style.display = 'flex';
+  ge('si-em').value = ''; ge('si-pw').value = '';
 }
 
-await fetch(API+"/patients",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify(body)
-
-})
-
-alert("Patient Added")
-
-loadPatients()
-
+function launchApp(){
+  ge('lp').style.display = 'none';
+  ge('app').style.display = 'block';
+  if(S.user){
+    ge('sb-un').textContent = S.user.name||'User';
+    ge('sb-ro').textContent = (S.user.role||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+    ge('sb-av').textContent = (S.user.name||'U')[0].toUpperCase();
+  }
+  if(S.hospital) ge('sb-hn').textContent = S.hospital.name||'Hospital';
+  ge('tb-date').textContent = today();
+  nav('dashboard');
 }
 
-loadPatients()
+// ── SIDEBAR ──
+function toggleSB(){
+  ge('sidebar').classList.toggle('open');
+  ge('ov').classList.toggle('open');
+}
+function closeSB(){
+  ge('sidebar').classList.remove('open');
+  ge('ov').classList.remove('open');
+}
 
-</script></body>
+// ── NAVIGATION ──
+var PAGE_TITLES = {
+  dashboard:'Dashboard', patients:'Patients', doctors:'Doctors',
+  appointments:'Appointments', opd:'OPD', ipd:'IPD', lab:'Laboratory',
+  billing:'Billing', staff:'Staff', inventory:'Inventory',
+  reports:'Reports', settings:'Settings'
+};
+
+function nav(page){
+  S.page = page;
+  closeSB();
+  document.querySelectorAll('.nav-item').forEach(function(el){
+    el.classList.remove('active');
+    if(el.getAttribute('onclick') && el.getAttribute('onclick').indexOf("'"+page+"'") > -1) el.classList.add('active');
+  });
+  ge('tb-title').textContent = PAGE_TITLES[page]||page;
+  var c = ge('content');
+  c.innerHTML = '<div class="loading"><div class="spinner"></div> Loading...</div>';
+  PAGES[page] ? PAGES[page]() : (c.innerHTML = '<div class="empty-state"><div class="ei">🚧</div><p>Coming soon</p></div>');
+}
+
+// ── PAGES ──
+var PAGES = {};
+
+// DASHBOARD
+PAGES.dashboard = function(){
+  var c = ge('content');
+  c.innerHTML =
+    '<div class="stat-grid">'+
+      '<div class="stat-card blue"><div class="sc-icon">👥</div><div class="sc-val" id="ds-pt">-</div><div class="sc-lbl">Total Patients</div></div>'+
+      '<div class="stat-card green"><div class="sc-icon">👨‍⚕️</div><div class="sc-val" id="ds-dr">-</div><div class="sc-lbl">Doctors</div></div>'+
+      '<div class="stat-card orange"><div class="sc-icon">📅</div><div class="sc-val" id="ds-ap">-</div><div class="sc-lbl">Appointments Today</div></div>'+
+      '<div class="stat-card purple"><div class="sc-icon">💰</div><div class="sc-val" id="ds-rev">-</div><div class="sc-lbl">Revenue Today</div></div>'+
+    '</div>'+
+    '<div class="table-wrap"><div class="tw-head"><span class="tw-title">📅 Recent Appointments</span></div>'+
+    '<div id="ds-aplist"><div class="loading"><div class="spinner"></div> Loading...</div></div></div>';
+
+  var hid = S.hospital && S.hospital.id;
+  if(!hid){ c.innerHTML = '<div class="empty-state"><div class="ei">⚠️</div><p>Hospital not found. Please logout and login again.</p></div>'; return; }
+
+  // Load stats
+  Promise.all([
+    api('GET','/patients?hospitalId='+hid+'&limit=1'),
+    api('GET','/doctors?hospitalId='+hid+'&limit=1'),
+    api('GET','/appointments?hospitalId='+hid+'&limit=5'),
+    api('GET','/billing?hospitalId='+hid+'&limit=1')
+  ]).then(function(results){
+    if(ge('ds-pt')) ge('ds-pt').textContent = results[0].total||0;
+    if(ge('ds-dr')) ge('ds-dr').textContent = results[1].total||0;
+    if(ge('ds-ap')) ge('ds-ap').textContent = results[2].total||0;
+    var rev = 0;
+    if(results[3] && results[3].bills) results[3].bills.forEach(function(b){ rev += b.amount||0; });
+    if(ge('ds-rev')) ge('ds-rev').textContent = cur(rev);
+    var appts = (results[2].appointments||results[2].data||[]);
+    var html = '';
+    if(appts.length === 0){
+      html = '<div class="empty-state"><div class="ei">📅</div><p>No appointments yet</p></div>';
+    } else {
+      html = '<table><thead><tr><th>Patient</th><th>Doctor</th><th>Time</th><th>Status</th></tr></thead><tbody>';
+      appts.forEach(function(a){
+        var st = a.status||'scheduled';
+        var bc = st==='completed'?'green':st==='cancelled'?'red':'blue';
+        html += '<tr><td>'+esc(a.patientName||a.patient||'-')+'</td><td>'+esc(a.doctorName||a.doctor||'-')+'</td><td>'+(a.time||a.appointmentTime||'-')+'</td><td><span class="badge '+bc+'">'+st+'</span></td></tr>';
+      });
+      html += '</tbody></table>';
+    }
+    if(ge('ds-aplist')) ge('ds-aplist').innerHTML = html;
+  }).catch(function(err){
+    c.innerHTML = '<div class="empty-state"><div class="ei">❌</div><p>'+esc(err.message)+'</p></div>';
+  });
+};
+
+// PATIENTS
+PAGES.patients = function(){
+  var c = ge('content');
+  c.innerHTML =
+    '<div class="page-head">'+
+      '<span class="page-title">👥 Patients</span>'+
+      '<button class="btn-new" onclick="openM(\'m-addpt\')">➕ Add Patient</button>'+
+    '</div>'+
+    '<div class="table-wrap">'+
+      '<div class="tw-head">'+
+        '<span class="tw-title">All Patients</span>'+
+        '<div class="search-box">🔍 <input id="pt-sr" placeholder="Search name, phone..."></div>'+
+      '</div>'+
+      '<div id="pt-list"><div class="loading"><div class="spinner"></div> Loading...</div></div>'+
+    '</div>';
+  loadPatients('');
+  setTimeout(function(){
+    var sr = ge('pt-sr');
+    if(sr) sr.addEventListener('input', function(){ loadPatients(this.value); });
+  }, 100);
+};
+
+function loadPatients(q){
+  var hid = S.hospital && S.hospital.id;
+  if(!hid) return;
+  api('GET','/patients?hospitalId='+hid+'&search='+encodeURIComponent(q||'')+'&limit=50')
+    .then(function(res){
+      var pts = res.patients||res.data||[];
+      var el = ge('pt-list');
+      if(!el) return;
+      if(pts.length === 0){
+        el.innerHTML = '<div class="empty-state"><div class="ei">👥</div><p>No patients found. Add your first patient!</p></div>';
+        return;
+      }
+      var html = '<table><thead><tr><th>Name</th><th>UHID</th><th>Age/Gender</th><th>Phone</th><th>Blood</th><th>Action</th></tr></thead><tbody>';
+      pts.forEach(function(p){
+        html += '<tr>'+
+          '<td><strong>'+esc(p.name||'-')+'</strong></td>'+
+          '<td><code style="color:var(--accent);font-size:12px">'+esc(p.uhid||'-')+'</code></td>'+
+          '<td>'+(p.age||'-')+' / '+(p.gender||'-')+'</td>'+
+          '<td>'+esc(p.phone||'-')+'</td>'+
+          '<td><span class="badge blue">'+(p.bloodGroup||p.blood||'-')+'</span></td>'+
+          '<td><button class="btn-sm danger" onclick="deletePatient(\''+p.id+'\')">🗑️</button></td>'+
+          '</tr>';
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    })
+    .catch(function(){ var el=ge('pt-list'); if(el) el.innerHTML='<div class="empty-state"><div class="ei">❌</div><p>Failed to load patients</p></div>'; });
+}
+
+function deletePatient(id){
+  if(!confirm('Delete this patient?')) return;
+  var hid = S.hospital && S.hospital.id;
+  api('DELETE','/patients/'+id+'?hospitalId='+hid)
+    .then(function(){ toast('Patient deleted','s'); loadPatients(''); })
+    .catch(function(e){ toast(e.message||'Failed','e'); });
+}
+
+// DOCTORS
+PAGES.doctors = function(){
+  var c = ge('content');
+  c.innerHTML =
+    '<div class="page-head">'+
+      '<span class="page-title">👨‍⚕️ Doctors</span>'+
+      '<button class="btn-new" onclick="openM(\'m-adddr\')">➕ Add Doctor</button>'+
+    '</div>'+
+    '<div class="table-wrap">'+
+      '<div class="tw-head"><span class="tw-title">All Doctors</span></div>'+
+      '<div id="dr-list"><div class="loading"><div class="spinner"></div> Loading...</div></div>'+
+    '</div>';
+  loadDoctors();
+};
+
+function loadDoctors(){
+  var hid = S.hospital && S.hospital.id;
+  if(!hid) return;
+  api('GET','/doctors?hospitalId='+hid+'&limit=50')
+    .then(function(res){
+      var drs = res.doctors||res.data||[];
+      var el = ge('dr-list');
+      if(!el) return;
+      if(drs.length === 0){
+        el.innerHTML = '<div class="empty-state"><div class="ei">👨‍⚕️</div><p>No doctors yet. Add your first doctor!</p></div>';
+        return;
+      }
+      var html = '<table><thead><tr><th>Name</th><th>Specialization</th><th>Department</th><th>Fee</th><th>Phone</th><th>Action</th></tr></thead><tbody>';
+      drs.forEach(function(d){
+        html += '<tr>'+
+          '<td><strong>'+esc(d.name||'-')+'</strong></td>'+
+          '<td><span class="badge purple">'+esc(d.specialization||d.spec||'-')+'</span></td>'+
+          '<td>'+esc(d.department||d.dept||'-')+'</td>'+
+          '<td>'+cur(d.consultationFee||d.fee||0)+'</td>'+
+          '<td>'+esc(d.phone||'-')+'</td>'+
+          '<td><button class="btn-sm danger" onclick="deleteDoctor(\''+d.id+'\')">🗑️</button></td>'+
+          '</tr>';
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    })
+    .catch(function(){ var el=ge('dr-list'); if(el) el.innerHTML='<div class="empty-state"><div class="ei">❌</div><p>Failed to load doctors</p></div>'; });
+}
+
+function deleteDoctor(id){
+  if(!confirm('Delete this doctor?')) return;
+  var hid = S.hospital && S.hospital.id;
+  api('DELETE','/doctors/'+id+'?hospitalId='+hid)
+    .then(function(){ toast('Doctor deleted','s'); loadDoctors(); })
+    .catch(function(e){ toast(e.message||'Failed','e'); });
+}
+
+// APPOINTMENTS
+PAGES.appointments = function(){
+  var c = ge('content');
+  c.innerHTML =
+    '<div class="page-head">'+
+      '<span class="page-title">📅 Appointments</span>'+
+      '<button class="btn-new" onclick="openM(\'m-addap\')">➕ Book Appointment</button>'+
+    '</div>'+
+    '<div class="table-wrap">'+
+      '<div class="tw-head"><span class="tw-title">All Appointments</span></div>'+
+      '<div id="ap-list"><div class="loading"><div class="spinner"></div> Loading...</div></div>'+
+    '</div>';
+  loadAppointments();
+};
+
+function loadAppointments(){
+  var hid = S.hospital && S.hospital.id;
+  if(!hid) return;
+  api('GET','/appointments?hospitalId='+hid+'&limit=50')
+    .then(function(res){
+      var aps = res.appointments||res.data||[];
+      var el = ge('ap-list');
+      if(!el) return;
+      if(aps.length === 0){
+        el.innerHTML = '<div class="empty-state"><div class="ei">📅</div><p>No appointments yet</p></div>';
+        return;
+      }
+      var html = '<table><thead><tr><th>Token</th><th>Patient</th><th>Doctor</th><th>Date/Time</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+      aps.forEach(function(a){
+        var st = a.status||'scheduled';
+        var bc = st==='completed'?'green':st==='cancelled'?'red':'blue';
+        html += '<tr>'+
+          '<td><strong style="color:var(--accent)">#'+(a.tokenNumber||a.token||'-')+'</strong></td>'+
+          '<td>'+esc(a.patientName||a.patient||'-')+'</td>'+
+          '<td>'+esc(a.doctorName||a.doctor||'-')+'</td>'+
+          '<td>'+(a.date||'')+(a.time?' '+a.time:a.appointmentTime?' '+a.appointmentTime:'')+'</td>'+
+          '<td><span class="badge '+bc+'">'+st+'</span></td>'+
+          '<td>'+
+            (st!=='completed'?'<button class="btn-sm green" onclick="completeAppt(\''+a.id+'\')">✓</button> ':'')+
+            '<button class="btn-sm danger" onclick="cancelAppt(\''+a.id+'\')">✕</button>'+
+          '</td>'+
+          '</tr>';
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    })
+    .catch(function(){ var el=ge('ap-list'); if(el) el.innerHTML='<div class="empty-state"><div class="ei">❌</div><p>Failed to load</p></div>'; });
+}
+
+function completeAppt(id){
+  var hid = S.hospital && S.hospital.id;
+  api('PUT','/appointments/'+id,{hospitalId:hid, status:'completed'})
+    .then(function(){ toast('Marked complete','s'); loadAppointments(); })
+    .catch(function(e){ toast(e.message,'e'); });
+}
+function cancelAppt(id){
+  if(!confirm('Cancel this appointment?')) return;
+  var hid = S.hospital && S.hospital.id;
+  api('PUT','/appointments/'+id,{hospitalId:hid, status:'cancelled'})
+    .then(function(){ toast('Appointment cancelled','w'); loadAppointments(); })
+    .catch(function(e){ toast(e.message,'e'); });
+}
+
+// BILLING
+PAGES.billing = function(){
+  var c = ge('content');
+  c.innerHTML =
+    '<div class="page-head">'+
+      '<span class="page-title">💰 Billing</span>'+
+      '<button class="btn-new" onclick="openM(\'m-addbill\')">➕ New Bill</button>'+
+    '</div>'+
+    '<div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">'+
+      '<div class="stat-card green"><div class="sc-icon">✅</div><div class="sc-val" id="bl-paid">-</div><div class="sc-lbl">Paid Bills</div></div>'+
+      '<div class="stat-card orange"><div class="sc-icon">⏳</div><div class="sc-val" id="bl-pend">-</div><div class="sc-lbl">Pending</div></div>'+
+      '<div class="stat-card blue"><div class="sc-icon">💰</div><div class="sc-val" id="bl-rev">-</div><div class="sc-lbl">Total Revenue</div></div>'+
+    '</div>'+
+    '<div class="table-wrap">'+
+      '<div class="tw-head"><span class="tw-title">All Bills</span></div>'+
+      '<div id="bl-list"><div class="loading"><div class="spinner"></div> Loading...</div></div>'+
+    '</div>';
+  loadBills();
+};
+
+function loadBills(){
+  var hid = S.hospital && S.hospital.id;
+  if(!hid) return;
+  api('GET','/billing?hospitalId='+hid+'&limit=50')
+    .then(function(res){
+      var bills = res.bills||res.data||[];
+      var el = ge('bl-list');
+      if(!el) return;
+      var paid = 0, pend = 0, rev = 0;
+      bills.forEach(function(b){
+        if(b.status==='paid'){ paid++; rev += b.amount||0; }
+        else pend++;
+      });
+      if(ge('bl-paid')) ge('bl-paid').textContent = paid;
+      if(ge('bl-pend')) ge('bl-pend').textContent = pend;
+      if(ge('bl-rev')) ge('bl-rev').textContent = cur(rev);
+      if(bills.length === 0){
+        el.innerHTML = '<div class="empty-state"><div class="ei">💰</div><p>No bills yet</p></div>';
+        return;
+      }
+      var html = '<table><thead><tr><th>Bill No</th><th>Patient</th><th>Type</th><th>Amount</th><th>Payment</th><th>Status</th></tr></thead><tbody>';
+      bills.forEach(function(b){
+        var st = b.status||'pending';
+        var bc = st==='paid'?'green':'orange';
+        html += '<tr>'+
+          '<td><code style="color:var(--accent);font-size:12px">'+esc(b.billNumber||b.billNo||b.id)+'</code></td>'+
+          '<td>'+esc(b.patientName||b.patient||'-')+'</td>'+
+          '<td><span class="badge blue">'+esc(b.type||'-')+'</span></td>'+
+          '<td><strong>'+cur(b.amount||0)+'</strong></td>'+
+          '<td>'+esc(b.paymentMode||b.payment||'-')+'</td>'+
+          '<td><span class="badge '+bc+'">'+st+'</span></td>'+
+          '</tr>';
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    })
+    .catch(function(){ var el=ge('bl-list'); if(el) el.innerHTML='<div class="empty-state"><div class="ei">❌</div><p>Failed to load</p></div>'; });
+}
+
+// OPD
+PAGES.opd = function(){
+  ge('content').innerHTML =
+    '<div class="page-head"><span class="page-title">🏃 OPD</span></div>'+
+    '<div class="table-wrap"><div class="tw-head"><span class="tw-title">OPD Records</span></div>'+
+    '<div id="opd-list"><div class="loading"><div class="spinner"></div> Loading...</div></div></div>';
+  var hid = S.hospital && S.hospital.id;
+  api('GET','/opd?hospitalId='+hid+'&limit=50')
+    .then(function(res){
+      var data = res.opdRecords||res.records||res.data||[];
+      var el = ge('opd-list');
+      if(!el) return;
+      if(data.length===0){ el.innerHTML='<div class="empty-state"><div class="ei">🏃</div><p>No OPD records</p></div>'; return; }
+      var html='<table><thead><tr><th>Patient</th><th>Doctor</th><th>Diagnosis</th><th>Date</th><th>Status</th></tr></thead><tbody>';
+      data.forEach(function(o){
+        var st=o.status||'active';
+        html+='<tr><td>'+esc(o.patientName||o.patient||'-')+'</td><td>'+esc(o.doctorName||o.doctor||'-')+'</td><td>'+esc(o.diagnosis||'-')+'</td><td>'+(o.date||o.createdAt||'-')+'</td><td><span class="badge '+(st==='completed'?'green':'blue')+'">'+st+'</span></td></tr>';
+      });
+      html+='</tbody></table>';
+      el.innerHTML=html;
+    })
+    .catch(function(){ var el=ge('opd-list'); if(el) el.innerHTML='<div class="empty-state"><div class="ei">🏃</div><p>No OPD records</p></div>'; });
+};
+
+// IPD
+PAGES.ipd = function(){
+  ge('content').innerHTML =
+    '<div class="page-head"><span class="page-title">🛏️ IPD</span></div>'+
+    '<div class="table-wrap"><div class="tw-head"><span class="tw-title">IPD Admissions</span></div>'+
+    '<div id="ipd-list"><div class="loading"><div class="spinner"></div> Loading...</div></div></div>';
+  var hid = S.hospital && S.hospital.id;
+  api('GET','/ipd?hospitalId='+hid+'&limit=50')
+    .then(function(res){
+      var data = res.admissions||res.data||[];
+      var el = ge('ipd-list');
+      if(!el) return;
+      if(data.length===0){ el.innerHTML='<div class="empty-state"><div class="ei">🛏️</div><p>No IPD admissions</p></div>'; return; }
+      var html='<table><thead><tr><th>Patient</th><th>Ward</th><th>Bed</th><th>Admit Date</th><th>Status</th></tr></thead><tbody>';
+      data.forEach(function(i){
+        html+='<tr><td>'+esc(i.patientName||'-')+'</td><td>'+esc(i.ward||'-')+'</td><td>'+esc(i.bedNumber||'-')+'</td><td>'+(i.admissionDate||'-')+'</td><td><span class="badge '+(i.status==='discharged'?'green':'orange')+'">'+( i.status||'admitted')+'</span></td></tr>';
+      });
+      html+='</tbody></table>';
+      el.innerHTML=html;
+    })
+    .catch(function(){ var el=ge('ipd-list'); if(el) el.innerHTML='<div class="empty-state"><div class="ei">🛏️</div><p>No IPD records</p></div>'; });
+};
+
+// LAB
+PAGES.lab = function(){
+  ge('content').innerHTML =
+    '<div class="page-head"><span class="page-title">🧪 Laboratory</span></div>'+
+    '<div class="table-wrap"><div class="tw-head"><span class="tw-title">Lab Tests</span></div>'+
+    '<div id="lab-list"><div class="loading"><div class="spinner"></div> Loading...</div></div></div>';
+  var hid = S.hospital && S.hospital.id;
+  api('GET','/laboratory?hospitalId='+hid+'&limit=50')
+    .then(function(res){
+      var data = res.tests||res.data||[];
+      var el = ge('lab-list');
+      if(!el) return;
+      if(data.length===0){ el.innerHTML='<div class="empty-state"><div class="ei">🧪</div><p>No lab tests</p></div>'; return; }
+      var html='<table><thead><tr><th>Test ID</th><th>Patient</th><th>Tests</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+      data.forEach(function(t){
+        var st=t.status||'pending';
+        var bc=st==='completed'?'green':st==='in-progress'?'orange':'blue';
+        html+='<tr><td><code style="color:var(--accent);font-size:12px">'+esc(t.testId||t.id)+'</code></td><td>'+esc(t.patientName||'-')+'</td><td>'+esc(t.testNames||t.tests||'-')+'</td><td>'+cur(t.amount||0)+'</td><td><span class="badge '+bc+'">'+st+'</span></td></tr>';
+      });
+      html+='</tbody></table>';
+      el.innerHTML=html;
+    })
+    .catch(function(){ var el=ge('lab-list'); if(el) el.innerHTML='<div class="empty-state"><div class="ei">🧪</div><p>No lab records</p></div>'; });
+};
+
+// STAFF
+PAGES.staff = function(){
+  ge('content').innerHTML =
+    '<div class="page-head"><span class="page-title">👔 Staff</span></div>'+
+    '<div class="table-wrap"><div class="tw-head"><span class="tw-title">Staff Members</span></div>'+
+    '<div id="st-list"><div class="loading"><div class="spinner"></div> Loading...</div></div></div>';
+  var hid = S.hospital && S.hospital.id;
+  api('GET','/staff?hospitalId='+hid+'&limit=50')
+    .then(function(res){
+      var data = res.staff||res.data||[];
+      var el = ge('st-list');
+      if(!el) return;
+      if(data.length===0){ el.innerHTML='<div class="empty-state"><div class="ei">👔</div><p>No staff members</p></div>'; return; }
+      var html='<table><thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Phone</th><th>Status</th></tr></thead><tbody>';
+      data.forEach(function(s){
+        html+='<tr><td><strong>'+esc(s.name||'-')+'</strong></td><td><span class="badge purple">'+esc(s.role||'-')+'</span></td><td>'+esc(s.department||'-')+'</td><td>'+esc(s.phone||'-')+'</td><td><span class="badge '+(s.status==='active'?'green':'red')+'">'+( s.status||'active')+'</span></td></tr>';
+      });
+      html+='</tbody></table>';
+      el.innerHTML=html;
+    })
+    .catch(function(){ var el=ge('st-list'); if(el) el.innerHTML='<div class="empty-state"><div class="ei">👔</div><p>No staff records</p></div>'; });
+};
+
+// INVENTORY
+PAGES.inventory = function(){
+  ge('content').innerHTML =
+    '<div class="page-head"><span class="page-title">📦 Inventory</span></div>'+
+    '<div class="table-wrap"><div class="tw-head"><span class="tw-title">Stock Items</span></div>'+
+    '<div id="inv-list"><div class="loading"><div class="spinner"></div> Loading...</div></div></div>';
+  var hid = S.hospital && S.hospital.id;
+  api('GET','/inventory?hospitalId='+hid+'&limit=50')
+    .then(function(res){
+      var data = res.items||res.data||[];
+      var el = ge('inv-list');
+      if(!el) return;
+      if(data.length===0){ el.innerHTML='<div class="empty-state"><div class="ei">📦</div><p>No inventory items</p></div>'; return; }
+      var html='<table><thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Unit</th><th>Status</th></tr></thead><tbody>';
+      data.forEach(function(i){
+        var low = (i.quantity||0) <= (i.minStock||10);
+        html+='<tr><td><strong>'+esc(i.name||'-')+'</strong></td><td>'+esc(i.category||'-')+'</td><td><strong style="color:'+(low?'var(--red)':'var(--green)')+'">'+( i.quantity||0)+'</strong></td><td>'+esc(i.unit||'pcs')+'</td><td><span class="badge '+(low?'red':'green')+'">'+(low?'Low Stock':'In Stock')+'</span></td></tr>';
+      });
+      html+='</tbody></table>';
+      el.innerHTML=html;
+    })
+    .catch(function(){ var el=ge('inv-list'); if(el) el.innerHTML='<div class="empty-state"><div class="ei">📦</div><p>No inventory</p></div>'; });
+};
+
+// REPORTS
+PAGES.reports = function(){
+  ge('content').innerHTML =
+    '<div class="page-head"><span class="page-title">📈 Reports</span></div>'+
+    '<div class="stat-grid">'+
+      '<div class="stat-card blue"><div class="sc-icon">👥</div><div class="sc-val" id="rp-pt">-</div><div class="sc-lbl">Total Patients</div></div>'+
+      '<div class="stat-card green"><div class="sc-icon">💰</div><div class="sc-val" id="rp-rev">-</div><div class="sc-lbl">Total Revenue</div></div>'+
+      '<div class="stat-card orange"><div class="sc-icon">📅</div><div class="sc-val" id="rp-ap">-</div><div class="sc-lbl">Appointments</div></div>'+
+      '<div class="stat-card purple"><div class="sc-icon">🧪</div><div class="sc-val" id="rp-lb">-</div><div class="sc-lbl">Lab Tests</div></div>'+
+    '</div>';
+  var hid = S.hospital && S.hospital.id;
+  Promise.all([
+    api('GET','/patients?hospitalId='+hid+'&limit=1'),
+    api('GET','/billing?hospitalId='+hid+'&limit=100'),
+    api('GET','/appointments?hospitalId='+hid+'&limit=1'),
+    api('GET','/laboratory?hospitalId='+hid+'&limit=1')
+  ]).then(function(r){
+    if(ge('rp-pt')) ge('rp-pt').textContent = r[0].total||0;
+    var rev=0; (r[1].bills||[]).forEach(function(b){ if(b.status==='paid') rev+=b.amount||0; });
+    if(ge('rp-rev')) ge('rp-rev').textContent = cur(rev);
+    if(ge('rp-ap')) ge('rp-ap').textContent = r[2].total||0;
+    if(ge('rp-lb')) ge('rp-lb').textContent = r[3].total||0;
+  }).catch(function(){});
+};
+
+// SETTINGS
+PAGES.settings = function(){
+  var h = S.hospital||{};
+  ge('content').innerHTML =
+    '<div class="page-head"><span class="page-title">⚙️ Settings</span></div>'+
+    '<div class="table-wrap" style="max-width:500px">'+
+      '<div class="tw-head"><span class="tw-title">Hospital Profile</span></div>'+
+      '<div style="padding:20px">'+
+        '<div class="form-group"><label class="lbl">Hospital Name</label><input class="fld" value="'+esc(h.name||'')+'" disabled></div>'+
+        '<div class="form-group"><label class="lbl">Plan</label><input class="fld" value="'+esc(h.plan||'starter')+'" disabled></div>'+
+        '<div class="form-group"><label class="lbl">Admin Email</label><input class="fld" value="'+esc((S.user&&S.user.email)||'')+'" disabled></div>'+
+        '<div class="form-group"><label class="lbl">Admin Name</label><input class="fld" value="'+esc((S.user&&S.user.name)||'')+'" disabled></div>'+
+        '<p style="color:var(--text2);font-size:12px;margin-top:8px">Contact support to update hospital details.</p>'+
+      '</div>'+
+    '</div>';
+};
+
+// MODAL SUBMIT HANDLERS
+function addPatient(){
+  var nm=ge('apt-nm').value.trim(), ag=ge('apt-ag').value.trim(),
+      gn=ge('apt-gn').value, bl=ge('apt-bl').value,
+      ph=ge('apt-ph').value.trim(), ad=ge('apt-ad').value.trim();
+  hideErr('apt-er');
+  if(!nm||!ag||!gn||!ph){ showErr('apt-er','Name, age, gender and phone are required'); return; }
+  var btn=ge('btn-apt'); btn.textContent='Saving...'; btn.disabled=true;
+  api('POST','/patients',{hospitalId:S.hospital.id, name:nm, age:parseInt(ag), gender:gn, bloodGroup:bl, phone:ph, address:ad})
+    .then(function(){ closeM('m-addpt'); toast('Patient added! ✅','s'); ge('apt-nm').value=''; ge('apt-ag').value=''; ge('apt-ph').value=''; ge('apt-ad').value=''; loadPatients(''); })
+    .catch(function(e){ showErr('apt-er',e.message||'Failed'); })
+    .finally(function(){ btn.textContent='Save Patient'; btn.disabled=false; });
+}
+
+function addDoctor(){
+  var nm=ge('adr-nm').value.trim(), sp=ge('adr-sp').value.trim(),
+      dp=ge('adr-dp').value.trim(), fe=ge('adr-fe').value.trim(),
+      ph=ge('adr-ph').value.trim();
+  hideErr('adr-er');
+  if(!nm||!sp){ showErr('adr-er','Name and specialization are required'); return; }
+  var btn=ge('btn-adr'); btn.textContent='Saving...'; btn.disabled=true;
+  api('POST','/doctors',{hospitalId:S.hospital.id, name:nm, specialization:sp, department:dp, consultationFee:parseFloat(fe)||0, phone:ph})
+    .then(function(){ closeM('m-adddr'); toast('Doctor added! ✅','s'); ge('adr-nm').value=''; ge('adr-sp').value=''; ge('adr-dp').value=''; ge('adr-fe').value=''; ge('adr-ph').value=''; loadDoctors(); })
+    .catch(function(e){ showErr('adr-er',e.message||'Failed'); })
+    .finally(function(){ btn.textContent='Save Doctor'; btn.disabled=false; });
+}
+
+function addAppointment(){
+  var pt=ge('aap-pt').value.trim(), dr=ge('aap-dr').value.trim(),
+      dt=ge('aap-dt').value, tm=ge('aap-tm').value, nt=ge('aap-nt').value.trim();
+  if(!pt||!dr||!dt||!tm){ toast('All fields required','e'); return; }
+  var btn=ge('btn-aap'); btn.textContent='Booking...'; btn.disabled=true;
+  api('POST','/appointments',{hospitalId:S.hospital.id, patientName:pt, doctorName:dr, date:dt, time:tm, notes:nt})
+    .then(function(){ closeM('m-addap'); toast('Appointment booked! 📅','s'); ge('aap-pt').value=''; ge('aap-dr').value=''; ge('aap-nt').value=''; loadAppointments(); })
+    .catch(function(e){ toast(e.message||'Failed','e'); })
+    .finally(function(){ btn.textContent='Book Appointment'; btn.disabled=false; });
+}
+
+function addBill(){
+  var pt=ge('abl-pt').value.trim(), ty=ge('abl-ty').value,
+      am=ge('abl-am').value.trim(), pm=ge('abl-pm').value;
+  if(!pt||!am){ toast('Patient name and amount required','e'); return; }
+  var btn=ge('btn-abl'); btn.textContent='Creating...'; btn.disabled=true;
+  api('POST','/billing',{hospitalId:S.hospital.id, patientName:pt, type:ty, amount:parseFloat(am)||0, paymentMode:pm, status:'paid'})
+    .then(function(){ closeM('m-addbill'); toast('Bill created! 💰','s'); ge('abl-pt').value=''; ge('abl-am').value=''; loadBills(); })
+    .catch(function(e){ toast(e.message||'Failed','e'); })
+    .finally(function(){ btn.textContent='Create Bill'; btn.disabled=false; });
+}
+
+// ESCAPE HTML
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', function(){
+  // Button listeners
+  ge('btn-li').addEventListener('click', doLogin);
+  ge('btn-rg').addEventListener('click', doRegister);
+  ge('btn-apt').addEventListener('click', addPatient);
+  ge('btn-adr').addEventListener('click', addDoctor);
+  ge('btn-aap').addEventListener('click', addAppointment);
+  ge('btn-abl').addEventListener('click', addBill);
+
+  ge('si-pw').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+  ge('rg-pw').addEventListener('keydown', function(e){ if(e.key==='Enter') doRegister(); });
+
+  ge('tb-date').textContent = today();
+
+  // Check saved session
+  try{
+    var sess = localStorage.getItem('mc_sess');
+    if(sess){
+      var d = JSON.parse(sess);
+      if(d.u && d.u.token){
+        S.user = d.u; S.hospital = d.h;
+        launchApp();
+        return;
+      }
+    }
+  }catch(x){}
+});
+</script>
+</body>
 </html>
