@@ -1,1037 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>MediCore HMS</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hospital Management System</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;color:#1e293b}
-button,input,select,textarea{font-family:inherit;font-size:14px}
-
-/* Icons - no CDN */
-.i{display:inline-flex;align-items:center;justify-content:center;width:1.2em;height:1.2em;vertical-align:middle;flex-shrink:0}
-
-/* Layout */
-#app{display:none;height:100vh;flex-direction:row;overflow:hidden}
-#sidebar{width:240px;min-width:240px;background:#0f172a;display:flex;flex-direction:column;height:100vh;overflow-y:auto;transition:transform .25s}
-#main-wrap{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
-#topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-#content{flex:1;overflow-y:auto;padding:16px;background:#f1f5f9}
-
-/* Sidebar */
-.sb-top{padding:16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
-.sb-icon{width:38px;height:38px;background:#0284c7;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.sb-title{font-size:14px;font-weight:700;color:#fff}
-.sb-sub{font-size:11px;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sb-sec{font-size:10px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.08em;padding:12px 16px 4px}
-.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;color:#94a3b8;background:none;border:none;width:calc(100% - 16px);margin:1px 8px;text-align:left;transition:all .15s}
-.nav-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
-.nav-btn.on{background:#0284c7;color:#fff;box-shadow:0 3px 10px rgba(2,132,199,.3)}
-.nav-icon{width:18px;text-align:center;flex-shrink:0;font-size:15px}
-.sb-foot{padding:10px 8px;border-top:1px solid rgba(255,255,255,.06);margin-top:auto}
-.sb-user{display:flex;align-items:center;gap:10px;padding:8px 10px}
-.sb-av{width:32px;height:32px;border-radius:50%;background:#0369a1;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb-un{font-size:13px;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sb-ro{font-size:11px;color:#475569}
-.sb-out{background:none;border:none;cursor:pointer;color:#475569;padding:4px 8px;border-radius:6px;font-size:16px;margin-left:auto}
-.sb-out:hover{color:#f87171}
-
-/* Topbar */
-#menu-btn{background:none;border:none;cursor:pointer;color:#64748b;font-size:20px;padding:4px 8px;border-radius:8px;line-height:1}
-#page-h{font-weight:700;font-size:17px;flex:1}
-.tb-btn{width:36px;height:36px;border-radius:10px;background:#f1f5f9;border:none;cursor:pointer;color:#64748b;font-size:15px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
-.tb-btn:hover{background:#e2e8f0}
-.ndot{position:absolute;top:7px;right:8px;width:6px;height:6px;background:#ef4444;border-radius:50%;border:1.5px solid #fff}
-
-/* Cards */
-.card{background:#fff;border-radius:14px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.sc{background:#fff;border-radius:14px;padding:16px;border:1px solid #e2e8f0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.sc:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
-
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:background .15s;white-space:nowrap}
-.bp{background:#0284c7;color:#fff}.bp:hover{background:#0369a1}
-.bs{background:#f1f5f9;color:#374151}.bs:hover{background:#e2e8f0}
-.bg{background:#10b981;color:#fff}.bg:hover{background:#059669}
-.br{background:#ef4444;color:#fff}.br:hover{background:#dc2626}
-.bsm{padding:5px 10px;font-size:12px;border-radius:8px}
-
-/* Form */
-.lbl{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:5px}
-.fld{width:100%;padding:9px 12px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#1e293b;font-size:14px;outline:none;transition:border .15s}
-.fld:focus{border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.1)}
-.ebox{background:#fee2e2;color:#991b1b;padding:10px 14px;border-radius:10px;font-size:13px;display:none}
-
-/* Badge */
-.bdg{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.bng{background:#d1fae5;color:#065f46}
-.bnr{background:#fee2e2;color:#991b1b}
-.bnb{background:#dbeafe;color:#1e40af}
-.bna{background:#fef3c7;color:#92400e}
-.bnx{background:#f1f5f9;color:#475569}
-.bnp{background:#ede9fe;color:#5b21b6}
-
-/* Table */
-.tw{background:#fff;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.tt{padding:14px 16px;border-bottom:1px solid #f1f5f9;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:space-between}
-table{width:100%;border-collapse:collapse}
-th{background:#f8fafc;padding:9px 14px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;text-align:left;white-space:nowrap}
-td{padding:11px 14px;font-size:13px;border-top:1px solid #f1f5f9}
-tr:hover td{background:#fafafa}
-.ts{overflow-x:auto}
-
-/* Modal */
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
-.mo.open{display:flex}
-.mb{background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
-.mh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #f1f5f9}
-.mh h3{font-weight:700;font-size:16px}
-.mx{background:none;border:none;cursor:pointer;color:#94a3b8;font-size:18px;padding:2px 6px;border-radius:6px;line-height:1}
-.mx:hover{color:#374151;background:#f1f5f9}
-.mp{padding:20px}
-
-/* Toast */
-#tst{position:fixed;top:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.tsi{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;color:#fff;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:200px;transition:opacity .3s}
-.tsi.fade{opacity:0}
-
-/* Misc */
-.spin{width:36px;height:36px;border:3px solid #e2e8f0;border-top-color:#0284c7;border-radius:50%;animation:sp .7s linear infinite;margin:60px auto;display:block}
-@keyframes sp{to{transform:rotate(360deg)}}
-.pg{animation:pi .2s ease}
-@keyframes pi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.row{display:flex;align-items:center}
-.sb{justify-content:space-between}
-.g2{gap:8px}.g3{gap:12px}
-.g2d{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.g3d{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.g4d{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.fc{grid-column:1/-1}
-.sy>*+*{margin-top:14px}
-.sy2>*+*{margin-top:20px}
-.mt{margin-top:16px}
-.pb{background:#f1f5f9;border-radius:99px;height:8px;overflow:hidden}
-.pf{height:100%;border-radius:99px}
-.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
-.w100{width:100%}
-.tc{text-align:center}
-.tr{text-align:right}
-.tm{color:#64748b;font-size:13px}
-.fw{font-weight:700}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90}
-.overlay.open{display:block}
-
-/* Login */
-#lp{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#0c4a6e 100%);padding:16px}
-.lc{background:#fff;border-radius:22px;padding:28px;width:100%;max-width:400px;box-shadow:0 25px 60px rgba(0,0,0,.3)}
-.ltabs{display:flex;background:#f1f5f9;border-radius:10px;padding:3px;margin-bottom:20px;gap:2px}
-.lt{flex:1;padding:8px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;background:transparent;color:#64748b;transition:all .2s}
-.lt.on{background:#fff;color:#0284c7;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-
-/* Mobile */
-@media(max-width:767px){
-  #sidebar{position:fixed;top:0;left:0;height:100vh;z-index:100;transform:translateX(-100%)}
-  #sidebar.open{transform:translateX(0)}
-  .g4d{grid-template-columns:1fr 1fr}
-  .g3d{grid-template-columns:1fr 1fr}
-  .g2d{grid-template-columns:1fr 1fr}
-}
-@media(min-width:768px){
-  #app{display:flex!important}
-  #menu-btn{display:none}
-  #sidebar{transform:none!important}
-}
+  #app { display: none; flex-direction: column; }
+  /* your existing styles here */
 </style>
 </head>
 <body>
 
-<div id="tst"></div>
-
-<!-- LOGIN -->
-<div id="lp">
-<div class="lc">
-  <div class="tc" style="margin-bottom:22px">
-    <div style="width:52px;height:52px;background:#0284c7;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 6px 20px rgba(2,132,199,.35);font-size:24px">🏥</div>
-    <h1 style="font-size:22px;font-weight:800">MediCore HMS</h1>
-    <p class="tm" style="margin-top:3px">Hospital Management System</p>
-  </div>
-  <div class="ltabs">
-    <button class="lt on" id="tab-in">Sign In</button>
-    <button class="lt" id="tab-reg">Register Hospital</button>
-  </div>
-
-  <!-- Sign In -->
-  <div id="fi" class="sy">
-    <div>
-      <label class="lbl">Email</label>
-      <input id="si-em" class="fld" type="email" value="" placeholder="admin@hospital.com">
-    </div>
-    <div>
-      <label class="lbl">Password</label>
-      <input id="si-pw" class="fld" type="password" value="" placeholder="••••••••">
-    </div>
-    <div id="si-er" class="ebox"></div>
-    <button id="btn-li" class="btn bp w100" style="justify-content:center;padding:11px;margin-top:4px">🔑 Sign In</button>
-    <div style="background:#fef3c7;border-radius:10px;padding:10px 14px;font-size:12px;color:#92400e">
-      ℹ️ Enter your registered email & password
-    </div>
-  </div>
-
-  <!-- Register -->
-  <div id="fr" style="display:none" class="sy">
-    <div>
-      <label class="lbl">Hospital Name *</label>
-      <input id="rg-ho" class="fld" placeholder="City General Hospital">
-    </div>
-    <div class="g2d">
-      <div>
-        <label class="lbl">Your Name *</label>
-        <input id="rg-na" class="fld" placeholder="Dr. Name">
-      </div>
-      <div>
-        <label class="lbl">Phone</label>
-        <input id="rg-ph" class="fld" type="tel" placeholder="+91 98765">
-      </div>
-    </div>
-    <div>
-      <label class="lbl">Email *</label>
-      <input id="rg-em" class="fld" type="email" placeholder="admin@hospital.com">
-    </div>
-    <div>
-      <label class="lbl">Password *</label>
-      <input id="rg-pw" class="fld" type="password" placeholder="Min 8 characters">
-    </div>
-    <div id="rg-er" class="ebox"></div>
-    <button id="btn-rg" class="btn bp w100" style="justify-content:center;padding:11px;margin-top:4px">🏥 Register Hospital</button>
-  </div>
-</div>
+<div id="lp" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;">
+  <h2>Login</h2>
+  <input id="login-un" placeholder="Username" />
+  <input id="login-pw" placeholder="Password" type="password" />
+  <button id="btn-login">Login</button>
+  <button id="btn-register">Register</button>
 </div>
 
-<!-- APP -->
-<div id="app">
-  <aside id="sidebar">
-    <div class="sb-top">
-      <div class="sb-icon">🏥</div>
-      <div style="min-width:0">
-        <div class="sb-title">MediCore HMS</div>
-        <div class="sb-sub" id="sb-hn">Hospital</div>
-      </div>
-    </div>
-    <nav style="padding:8px">
-      <div class="sb-sec">Main</div>
-      <button class="nav-btn" data-p="dashboard"><span class="nav-icon">📊</span>Dashboard</button>
-      <button class="nav-btn" data-p="patients"><span class="nav-icon">👥</span>Patients</button>
-      <button class="nav-btn" data-p="doctors"><span class="nav-icon">👨‍⚕️</span>Doctors</button>
-      <button class="nav-btn" data-p="appointments"><span class="nav-icon">📅</span>Appointments</button>
-      <div class="sb-sec">Clinical</div>
-      <button class="nav-btn" data-p="opd"><span class="nav-icon">🩺</span>OPD</button>
-      <button class="nav-btn" data-p="ipd"><span class="nav-icon">🛏️</span>IPD / Wards</button>
-      <button class="nav-btn" data-p="laboratory"><span class="nav-icon">🧪</span>Laboratory</button>
-      <div class="sb-sec">Admin</div>
-      <button class="nav-btn" data-p="billing"><span class="nav-icon">🧾</span>Billing</button>
-      <button class="nav-btn" data-p="staff"><span class="nav-icon">🪪</span>Staff</button>
-      <button class="nav-btn" data-p="inventory"><span class="nav-icon">📦</span>Inventory</button>
-      <button class="nav-btn" data-p="reports"><span class="nav-icon">📈</span>Reports</button>
-      <button class="nav-btn" data-p="settings"><span class="nav-icon">⚙️</span>Settings</button>
-    </nav>
-    <div class="sb-foot">
-      <div class="sb-user">
-        <div class="sb-av" id="sb-av">D</div>
-        <div style="flex:1;min-width:0">
-          <div class="sb-un" id="sb-un">Admin</div>
-          <div class="sb-ro" id="sb-ro">Hospital Admin</div>
-        </div>
-        <button class="sb-out" id="btn-lo" title="Logout">🚪</button>
-      </div>
-    </div>
-  </aside>
-  <div class="overlay" id="ov"></div>
+<div id="app" style="display:none; flex-direction:column; height:100vh;">
+  <div style="display:flex; justify-content:space-between; padding:10px; background:#ccc;">
+    <div>Welcome, <span id="sb-un"></span></div>
+    <div>Role: <span id="sb-ro"></span></div>
+    <div>Hospital: <span id="sb-hn"></span></div>
+    <div><button onclick="logout()">Logout</button></div>
+  </div>
 
-  <div id="main-wrap">
-    <div id="topbar">
-      <button id="menu-btn">☰</button>
-      <span id="page-h">Dashboard</span>
-      <button class="tb-btn" id="btn-dk">🌙</button>
-      <div class="tb-btn">🔔<span class="ndot"></span></div>
-    </div>
-    <div id="content"><div class="spin"></div></div>
+  <div id="dashboard" style="padding:10px;">
+    <h2>Dashboard</h2>
+    <button onclick="showPage('patients')">Manage Patients</button>
+    <button onclick="showPage('doctors')">Manage Doctors</button>
+    <button onclick="showPage('appointments')">Manage Appointments</button>
+    <button onclick="showPage('bills')">Manage Bills</button>
+  </div>
+
+  <div id="patients" style="display:none;">
+    <h2>Patients</h2>
+    <button onclick="showForm('patients')">Add Patient</button>
+    <table border="1" width="100%">
+      <thead><tr><th>Uhid</th><th>Name</th></tr></thead>
+      <tbody id="patients-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="doctors" style="display:none;">
+    <h2>Doctors</h2>
+    <button onclick="showForm('doctors')">Add Doctor</button>
+    <table border="1" width="100%">
+      <thead><tr><th>Name</th><th>Spec</th></tr></thead>
+      <tbody id="doctors-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="appointments" style="display:none;">
+    <h2>Appointments</h2>
+    <button onclick="showForm('appointments')">Add Appointment</button>
+    <table border="1" width="100%">
+      <thead><tr><th>Token</th><th>Patient</th><th>Doctor</th></tr></thead>
+      <tbody id="appointments-tbody"></tbody>
+    </table>
+  </div>
+
+  <div id="bills" style="display:none;">
+    <h2>Bills</h2>
+    <button onclick="showForm('bills')">Add Bill</button>
+    <table border="1" width="100%">
+      <thead><tr><th>No</th><th>Patient</th><th>Amount</th></tr></thead>
+      <tbody id="bills-tbody"></tbody>
+    </table>
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-var S = { user:null, hospital:null, dark: localStorage.getItem('dk')==='1' };
+<script>
+var API_URL='https://web-production-d347.up.railway.app/api';
 
-// ── API CONFIG ── Apna EC2 IP yahan lagao ─────────────
-var API_URL = 'https://web-production-d347.up.railway.app/api';
-// Railway deployment URL
-var API_ON = API_URL.indexOf('YOUR_EC2') === -1;
-function api(method, path, body){
-  return fetch(API_URL+path,{method:method,
-    headers:{'Content-Type':'application/json','Authorization':S.user&&S.user.token?'Bearer '+S.user.token:''},
-    body:body?JSON.stringify(body):undefined
-  }).then(function(r){
-    if(!r.ok) return r.json().then(function(e){throw new Error(e.message||'API Error');});
-    return r.json();
+var S={user:null, hospital:null};
+var DATA={patients:[], doctors:[], appts:[], bills:[]};
+
+document.addEventListener('DOMContentLoaded', ()=> {
+  ge('btn-login').onclick=login;
+  ge('btn-register').onclick=register;
+});
+
+function ge(id){return document.getElementById(id);}
+
+function api(method, path, data=null) {
+  return fetch(API_URL+path, {
+    method: method,
+    headers: {'Content-Type':'application/json'},
+    body: data ? JSON.stringify(data) : null,
+  }).then(r=>r.json());
+}
+
+function login() {
+  var un=ge('login-un').value;
+  var pw=ge('login-pw').value;
+  api('POST','/login',{un,pw}).then(res=>{
+    if(res.token){
+      S.user=res.user;
+      S.token=res.token;
+      localStorage.setItem('token',res.token);
+      launchApp();
+    } else alert('Login failed');
   });
 }
 
-var DATA = { patients:[], doctors:[], appts:[], bills:[] };
-
-// Helpers
-function ge(id){ return document.getElementById(id); }
-function cur(v){ return '\u20B9'+(v||0).toLocaleString('en-IN'); }
-
-function toast(msg,t){
-  var c={s:'#10b981',e:'#ef4444',i:'#0284c7',w:'#f59e0b'};
-  var ic={s:'✅',e:'❌',i:'ℹ️',w:'⚠️'};
-  var k=t||'s';
-  var d=document.createElement('div');
-  d.className='tsi';
-  d.style.background=c[k]||c.s;
-  d.textContent=(ic[k]||ic.s)+' '+msg;
-  ge('tst').appendChild(d);
-  setTimeout(function(){d.classList.add('fade');},2800);
-  setTimeout(function(){if(d.parentNode)d.parentNode.removeChild(d);},3200);
-}
-
-function openM(id){ var m=ge(id); if(m)m.classList.add('open'); }
-function closeM(id){ var m=ge(id); if(m)m.classList.remove('open'); }
-
-function applyDark(){
-  document.body.style.background = S.dark?'#0f172a':'';
-  document.body.style.color = S.dark?'#f1f5f9':'';
-  var dk=ge('btn-dk'); if(dk)dk.textContent=S.dark?'☀️':'🌙';
-  var ct=ge('content'); if(ct)ct.style.background=S.dark?'#0f172a':'#f1f5f9';
-}
-
-// AUTH
-function doLogin(){
-  var em=(ge('si-em').value||'').trim();
-  var pw=ge('si-pw').value||'';
-  var er=ge('si-er');
-  er.style.display='none';
-  if(!em||!pw){ er.textContent='Enter email and password'; er.style.display=''; return; }
-
-  // Real API login
-  if(API_ON){
-    var btn=ge('btn-li');
-    btn.textContent='⏳ Signing in...'; btn.disabled=true;
-    api('POST','/auth/login',{email:em,password:pw})
-      .then(function(res){
-        S.user=Object.assign(res.user,{token:res.token});
-        S.hospital=res.hospital;
-        try{localStorage.setItem('hs',JSON.stringify({u:S.user,h:S.hospital}));}catch(x){}
-        launchApp();
-        toast('Welcome back, '+res.user.name+'!','s');
-      })
-      .catch(function(err){
-        er.textContent=err.message||'Login failed';
-        er.style.display='';
-      })
-      .finally(function(){btn.textContent='🔑 Sign In'; btn.disabled=false;});
-    return;
-  }
-
-  // No demo mode - real backend only
-  er.textContent='Backend not configured. Please set API_URL.';
-  er.style.display='';
-}
-
-function doRegister(){
-  var na=(ge('rg-na').value||'').trim();
-  var ho=(ge('rg-ho').value||'').trim();
-  var em=(ge('rg-em').value||'').trim();
-  var pw=ge('rg-pw').value||'';
-  var er=ge('rg-er');
-  er.style.display='none';
-  if(!na||!ho||!em||!pw){ er.textContent='All fields required'; er.style.display=''; return; }
-  var btn=ge('btn-rg');
-  btn.textContent='⏳ Registering...'; btn.disabled=true;
-  api('POST','/auth/register',{name:na,hospitalName:ho,email:em,password:pw,role:'hospital_admin'})
-    .then(function(res){
-      S.user=Object.assign(res.user,{token:res.token});
-      S.hospital=res.hospital;
-      try{localStorage.setItem('hs',JSON.stringify({u:S.user,h:S.hospital}));}catch(x){}
+function register() {
+  var un=ge('login-un').value;
+  var pw=ge('login-pw').value;
+  api('POST','/register',{un,pw}).then(res=>{
+    if(res.token){
+      S.user=res.user;
+      S.token=res.token;
+      localStorage.setItem('token',res.token);
       launchApp();
-      toast('Hospital registered! Welcome, '+res.user.name+'!','s');
-    })
-    .catch(function(err){
-      er.textContent=err.message||'Registration failed';
-      er.style.display='';
-    })
-    .finally(function(){btn.textContent='🏥 Register Hospital'; btn.disabled=false;});
+    } else alert('Register failed');
+  });
 }
 
-function doLogout(){
-  try{localStorage.removeItem('hs');}catch(x){}
-  S.user=null; S.hospital=null;
-  ge('app').style.display='none';
-  ge('lp').style.display='flex';
-}
-
-function launchApp(){
+function launchApp() {
   ge('lp').style.display='none';
   ge('app').style.display='flex';
+
   if(S.user){
     ge('sb-un').textContent=S.user.name;
-    ge('sb-ro').textContent=(S.user.role||'').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+    ge('sb-ro').textContent=(S.user.role||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
     ge('sb-av').textContent=S.user.name[0].toUpperCase();
   }
-  if(S.hospital) ge('sb-hn').textContent=S.hospital.name;
+  // For production, fetch real data
+  fetchInitialData();
+
   showPage('dashboard');
 }
 
-// SIDEBAR
-function toggleSB(){
-  ge('sidebar').classList.toggle('open');
-  ge('ov').classList.toggle('open');
-}
-function closeSB(){
-  ge('sidebar').classList.remove('open');
-  ge('ov').classList.remove('open');
-}
-
-// ROUTER
-var PG={};
-function reg(n,f){ PG[n]=f; }
-
-var PT={dashboard:'Dashboard',patients:'Patients',doctors:'Doctors',appointments:'Appointments',
-  opd:'OPD Consultation',ipd:'IPD / Wards',laboratory:'Laboratory',billing:'Billing',
-  staff:'Staff',inventory:'Inventory',reports:'Reports',settings:'Settings'};
-
-function showPage(name){
-  document.querySelectorAll('.nav-btn').forEach(function(b){
-    b.classList.toggle('on',b.dataset.p===name);
-  });
-  ge('page-h').textContent=PT[name]||name;
-  ge('content').innerHTML='<div class="spin"></div>';
-  if(PG[name]) PG[name]();
-  else ge('content').innerHTML='<div class="tc" style="padding:60px;color:#94a3b8"><p style="font-size:36px">🔧</p><p style="margin-top:8px">Coming soon</p></div>';
-  if(window.innerWidth<768) closeSB();
+function fetchInitialData() {
+  // Fetch Patients
+  api('GET','/patients').then(patients=>{
+    DATA.patients=patients;
+    renderPatients();
+  }).catch(()=>{DATA.patients=[]; renderPatients();});
+  // Fetch Doctors
+  api('GET','/doctors').then(doctors=>{
+    DATA.doctors=doctors;
+    renderDoctors();
+  }).catch(()=>{DATA.doctors=[]; renderDoctors();});
+  // Fetch Appointments
+  api('GET','/appointments').then(appts=>{
+    DATA.appts=appts;
+    renderAppointments();
+  }).catch(()=>{DATA.appts=[]; renderAppointments();});
+  // Fetch Bills
+  api('GET','/bills').then(bills=>{
+    DATA.bills=bills;
+    renderBills();
+  }).catch(()=>{DATA.bills=[]; renderBills();});
 }
 
-// STAT CARD
-function sc(label,val,icon,color,bg,sub){
-  return '<div class="sc"><div class="row sb"><div>'+
-    '<p style="font-size:12px;color:#64748b;margin-bottom:5px">'+label+'</p>'+
-    '<p style="font-size:22px;font-weight:800;color:'+color+'">'+val+'</p>'+
-    '<p style="font-size:11px;color:#94a3b8;margin-top:2px">'+sub+'</p></div>'+
-    '<div style="width:40px;height:40px;background:'+bg+';border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">'+icon+'</div>'+
-    '</div></div>';
+function showPage(page) {
+  ['dashboard','patients','doctors','appointments','bills'].forEach(p=>ge(p).style.display='none');
+  ge(page).style.display='block';
 }
 
-// DASHBOARD
-reg('dashboard',function(){
-  var h=new Date().getHours();
-  var g=h<12?'Morning':h<17?'Afternoon':'Evening';
-  var n=(S.user&&S.user.name)||'Doctor';
-  var rows='';
-  DATA.appts.forEach(function(a){
-    rows+='<tr><td><div style="width:30px;height:30px;background:#dbeafe;color:#1e40af;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">'+a.tok+'</div></td>'+
-    '<td><strong>'+a.pt+'</strong></td><td style="color:#475569">'+a.dr+'</td>'+
-    '<td><span class="bdg '+(a.st==='completed'?'bng':'bnb')+'">'+a.st+'</span></td></tr>';
+function showForm(page) {
+  // Implement form show/hide if needed
+}
+
+// Render functions
+function renderPatients() {
+  var tbody=ge('patients-tbody');
+  tbody.innerHTML='';
+  DATA.patients.forEach(p=>{
+    var tr=document.createElement('tr');
+    tr.innerHTML=`<td>${p.uhid}</td><td>${p.name}</td>`;
+    tbody.appendChild(tr);
   });
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div>'+
-      '<h3 style="font-size:20px;font-weight:800">Good '+g+', '+(n.split(' ')[1]||n)+' 👋</h3>'+
-      '<p class="tm" style="margin-top:3px">'+new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</p>'+
-    '</div><button class="btn bp" id="d-na">+ New Appointment</button></div>'+
-    '<div class="g4d">'+sc('Total Patients','1,247','👥','#0284c7','#dbeafe','Registered')+sc("Today's Appts",'34','📅','#10b981','#d1fae5','Scheduled')+sc('Active IPD','12','🛏️','#8b5cf6','#ede9fe','Admitted')+sc('Revenue Today',cur(45280),'💰','#f59e0b','#fef3c7','Collected')+'</div>'+
-    '<div class="g2d">'+
-      '<div class="card" style="padding:18px"><h4 style="font-weight:700;margin-bottom:12px;font-size:14px">Monthly Patients</h4><canvas id="ch-p" height="200"></canvas></div>'+
-      '<div class="card" style="padding:18px"><h4 style="font-weight:700;margin-bottom:12px;font-size:14px">Revenue (7 Days)</h4><canvas id="ch-r" height="200"></canvas></div>'+
-    '</div>'+
-    '<div class="tw"><div class="tt">Today\'s Appointments <button class="btn bs bsm" id="d-va">View All</button></div>'+
-    '<div class="ts"><table><thead><tr><th>Token</th><th>Patient</th><th>Doctor</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'+
-    '<div class="g4d" id="qact">'+
-      '<button class="btn bs w100" style="flex-direction:column;padding:16px;gap:8px;border-radius:14px;border:1px solid #e2e8f0" data-qp="patients"><span style="font-size:24px">👤</span><span style="font-weight:600">Add Patient</span></button>'+
-      '<button class="btn bs w100" style="flex-direction:column;padding:16px;gap:8px;border-radius:14px;border:1px solid #e2e8f0" data-qp="appointments"><span style="font-size:24px">📅</span><span style="font-weight:600">Book Appt</span></button>'+
-      '<button class="btn bs w100" style="flex-direction:column;padding:16px;gap:8px;border-radius:14px;border:1px solid #e2e8f0" data-qp="billing"><span style="font-size:24px">🧾</span><span style="font-weight:600">New Bill</span></button>'+
-      '<button class="btn bs w100" style="flex-direction:column;padding:16px;gap:8px;border-radius:14px;border:1px solid #e2e8f0" data-qp="laboratory"><span style="font-size:24px">🧪</span><span style="font-weight:600">Lab Order</span></button>'+
-    '</div></div>';
+}
 
-  ge('d-na').addEventListener('click',function(){showPage('appointments');});
-  ge('d-va').addEventListener('click',function(){showPage('appointments');});
-  ge('qact').querySelectorAll('[data-qp]').forEach(function(b){
-    b.addEventListener('click',function(){showPage(b.dataset.qp);});
+function renderDoctors() {
+  var tbody=ge('doctors-tbody');
+  tbody.innerHTML='';
+  DATA.doctors.forEach(d=>{
+    var tr=document.createElement('tr');
+    tr.innerHTML=`<td>${d.name}</td><td>${d.spec}</td>`;
+    tbody.appendChild(tr);
   });
+}
 
-  setTimeout(function(){
-    try{
-      var cp=ge('ch-p'), cr=ge('ch-r');
-      if(cp) new Chart(cp,{type:'bar',data:{labels:['Oct','Nov','Dec','Jan','Feb','Mar'],datasets:[{data:[85,120,95,145,132,168],backgroundColor:'rgba(2,132,199,.15)',borderColor:'#0284c7',borderWidth:2,borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#94a3b8'}},x:{grid:{display:false},ticks:{color:'#94a3b8'}}}}});
-      if(cr) new Chart(cr,{type:'line',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{data:[32000,45000,28000,52000,41000,38000,49000],borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',borderWidth:2,tension:.4,fill:true,pointRadius:4,pointBackgroundColor:'#10b981'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#94a3b8',callback:function(v){return'\u20B9'+(v/1000).toFixed(0)+'k';}},grid:{color:'rgba(0,0,0,.05)'}},x:{grid:{display:false},ticks:{color:'#94a3b8'}}}}});
-    }catch(e){}
-  },100);
-});
-
-// PATIENTS
-reg('patients',function(){
-  function rows(list){
-    if(!list.length) return '<tr><td colspan="5" class="tc" style="padding:40px;color:#94a3b8"><p style="font-size:28px">👥</p><p style="margin-top:6px">No patients found</p></td></tr>';
-    return list.map(function(p){
-      var f=p.gender==='Female';
-      return '<tr><td><div class="row g2"><div class="av" style="background:'+(f?'#fce7f3':'#dbeafe')+';color:'+(f?'#be185d':'#1e40af')+'">'+p.name[0]+'</div>'+
-        '<div><strong>'+p.name+'</strong><br><span class="tm">'+p.age+'y · '+p.gender+'</span></div></div></td>'+
-        '<td><code style="background:#f1f5f9;padding:2px 8px;border-radius:6px;font-size:12px">'+p.uhid+'</code></td>'+
-        '<td>'+p.phone+'</td>'+
-        '<td><span class="bdg bnr">'+p.blood+'</span></td>'+
-        '<td class="tr"><button class="btn bs bsm" data-pview="'+p.id+'">👁</button></td></tr>';
-    }).join('');
-  }
-
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div><h3 style="font-size:20px;font-weight:800">Patients</h3><p class="tm" style="margin-top:3px">Manage patient records</p></div>'+
-    '<button class="btn bp" id="btn-apt">+ Add Patient</button></div>'+
-    '<div style="background:#fff;border-radius:12px;padding:12px;border:1px solid #e2e8f0;display:flex;align-items:center;gap:8px">'+
-    '<span style="color:#94a3b8">🔍</span>'+
-    '<input id="pt-sr" style="border:none;outline:none;font-size:14px;flex:1;font-family:inherit" placeholder="Search name, phone, UHID..."></div>'+
-    '<div class="g3d">'+
-      '<div class="card" style="padding:14px;text-align:center"><p style="font-size:22px;font-weight:800;color:#0284c7">'+DATA.patients.length+'</p><p class="tm">Total</p></div>'+
-      '<div class="card" style="padding:14px;text-align:center"><p style="font-size:22px;font-weight:800;color:#10b981">3</p><p class="tm">Today</p></div>'+
-      '<div class="card" style="padding:14px;text-align:center"><p style="font-size:22px;font-weight:800;color:#f59e0b">6</p><p class="tm">This Month</p></div>'+
-    '</div>'+
-    '<div class="tw"><div class="tt">Patient Records <span class="bdg bnx" id="pt-ct">'+DATA.patients.length+' patients</span></div>'+
-    '<div class="ts"><table><thead><tr><th>Patient</th><th>UHID</th><th>Phone</th><th>Blood</th><th class="tr">Action</th></tr></thead>'+
-    '<tbody id="pt-tb">'+rows(DATA.patients)+'</tbody></table></div></div></div>'+
-
-    '<div class="mo" id="mo-pt">'+
-    '<div class="mb"><div class="mh"><h3>Add Patient</h3><button class="mx" id="cx-pt">✕</button></div>'+
-    '<div class="mp sy">'+
-    '<div class="fc"><label class="lbl">Full Name *</label><input id="pt-nm" class="fld" placeholder="Patient name"></div>'+
-    '<div class="g2d">'+
-      '<div><label class="lbl">Age *</label><input id="pt-ag" class="fld" type="number" placeholder="Age"></div>'+
-      '<div><label class="lbl">Gender *</label><select id="pt-gn" class="fld"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>'+
-    '</div>'+
-    '<div class="g2d">'+
-      '<div><label class="lbl">Phone *</label><input id="pt-ph" class="fld" type="tel" placeholder="Phone"></div>'+
-      '<div><label class="lbl">Blood Group</label><select id="pt-bl" class="fld"><option value="">Unknown</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></div>'+
-    '</div>'+
-    '<div class="g2d" style="margin-top:4px">'+
-      '<button class="btn bs w100" style="justify-content:center" id="cc-pt">Cancel</button>'+
-      '<button class="btn bp w100" style="justify-content:center" id="sv-pt">💾 Save</button>'+
-    '</div></div></div></div>';
-
-  ge('btn-apt').addEventListener('click',function(){openM('mo-pt');});
-  ge('cx-pt').addEventListener('click',function(){closeM('mo-pt');});
-  ge('cc-pt').addEventListener('click',function(){closeM('mo-pt');});
-  ge('mo-pt').addEventListener('click',function(e){if(e.target===this)closeM('mo-pt');});
-  ge('pt-sr').addEventListener('input',function(){
-    var q=this.value.toLowerCase();
-    var fl=DATA.patients.filter(function(p){return !q||p.name.toLowerCase().indexOf(q)>-1||p.phone.indexOf(q)>-1||p.uhid.toLowerCase().indexOf(q)>-1;});
-    ge('pt-tb').innerHTML=rows(fl);
-    ge('pt-ct').textContent=fl.length+' patients';
-    wireViewBtns();
+function renderAppointments() {
+  var tbody=ge('appointments-tbody');
+  tbody.innerHTML='';
+  DATA.appts.forEach(a=>{
+    var tr=document.createElement('tr');
+    tr.innerHTML=`<td>${a.tok}</td><td>${a.pt}</td><td>${a.dr}</td>`;
+    tbody.appendChild(tr);
   });
-  ge('sv-pt').addEventListener('click',function(){
-    var nm=(ge('pt-nm').value||'').trim(), ph=(ge('pt-ph').value||'').trim();
-    if(!nm||!ph){toast('Name and phone required','e');return;}
-    var idx=DATA.patients.length+1;
-    DATA.patients.push({id:'p'+idx,uhid:'MCH-00'+idx,name:nm,age:parseInt(ge('pt-ag').value)||0,
-      gender:ge('pt-gn').value,phone:ph,blood:ge('pt-bl').value||'?'});
-    closeM('mo-pt');
-    toast('Patient "'+nm+'" added!','s');
-    showPage('patients');
+}
+
+function renderBills() {
+  var tbody=ge('bills-tbody');
+  tbody.innerHTML='';
+  DATA.bills.forEach(b=>{
+    var tr=document.createElement('tr');
+    tr.innerHTML=`<td>${b.no}</td><td>${b.pt}</td><td>${b.amt}</td>`;
+    tbody.appendChild(tr);
   });
-  function wireViewBtns(){
-    ge('content').querySelectorAll('[data-pview]').forEach(function(b){
-      b.addEventListener('click',function(){
-        var pt=DATA.patients.find(function(p){return p.id===b.dataset.pview;});
-        if(pt) toast('Patient: '+pt.name+' | '+pt.uhid,'i');
-      });
-    });
-  }
-  wireViewBtns();
-});
+}
 
-// DOCTORS
-reg('doctors',function(){
-  var dc={Cardiology:'#ef4444',Neurology:'#8b5cf6',Orthopedics:'#f59e0b',Pediatrics:'#10b981'};
-  var db={Cardiology:'#fee2e2',Neurology:'#ede9fe',Orthopedics:'#fef3c7',Pediatrics:'#d1fae5'};
-
-  // Schedule data per doctor
-  var scheduleData = {
-    'd1': [
-      {day:'Monday',slots:['09:00-09:30','09:30-10:00','10:00-10:30','10:30-11:00'],booked:[0,1]},
-      {day:'Tuesday',slots:['09:00-09:30','09:30-10:00','10:00-10:30'],booked:[0]},
-      {day:'Wednesday',slots:['14:00-14:30','14:30-15:00','15:00-15:30'],booked:[]},
-      {day:'Thursday',slots:['09:00-09:30','09:30-10:00'],booked:[1]},
-      {day:'Friday',slots:['10:00-10:30','10:30-11:00','11:00-11:30'],booked:[0,2]}
-    ],
-    'd2': [
-      {day:'Monday',slots:['10:00-10:30','10:30-11:00','11:00-11:30'],booked:[1]},
-      {day:'Wednesday',slots:['10:00-10:30','10:30-11:00'],booked:[0]},
-      {day:'Friday',slots:['14:00-14:30','14:30-15:00','15:00-15:30'],booked:[2]}
-    ],
-    'd3': [
-      {day:'Tuesday',slots:['09:00-09:30','09:30-10:00','10:00-10:30'],booked:[0]},
-      {day:'Thursday',slots:['09:00-09:30','09:30-10:00'],booked:[]},
-      {day:'Saturday',slots:['10:00-10:30','10:30-11:00','11:00-11:30','11:30-12:00'],booked:[1,3]}
-    ],
-    'd4': [
-      {day:'Monday',slots:['09:00-09:30','09:30-10:00','10:00-10:30','10:30-11:00'],booked:[0,2]},
-      {day:'Tuesday',slots:['09:00-09:30','09:30-10:00'],booked:[]},
-      {day:'Wednesday',slots:['14:00-14:30','14:30-15:00'],booked:[0]},
-      {day:'Saturday',slots:['10:00-10:30','10:30-11:00','11:00-11:30'],booked:[1]}
-    ]
-  };
-
-  var cards=DATA.doctors.map(function(d){
-    var c=dc[d.dept]||'#0284c7', bg=db[d.dept]||'#dbeafe';
-    return '<div class="card" style="overflow:hidden">'+
-      '<div style="background:'+bg+';padding:18px;text-align:center">'+
-      '<div style="width:50px;height:50px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:'+c+';margin:0 auto;box-shadow:0 3px 10px rgba(0,0,0,.1)">'+d.name[4]+'</div></div>'+
-      '<div style="padding:14px;text-align:center">'+
-      '<p style="font-weight:700;font-size:14px">'+d.name+'</p>'+
-      '<p style="color:'+c+';font-weight:600;font-size:13px;margin:3px 0">'+d.spec+'</p>'+
-      '<p class="tm" style="font-size:12px">'+d.dept+'</p>'+
-      '<div style="background:'+bg+';border-radius:10px;padding:8px;text-align:center;margin:10px 0">'+
-      '<p style="font-weight:800;font-size:17px;color:'+c+'">'+cur(d.fee)+'</p>'+
-      '<p style="font-size:11px;color:#64748b">Consultation</p></div>'+
-      '<p style="font-size:12px;color:#64748b;margin-bottom:10px">📅 '+d.days+'</p>'+
-      '<div class="row g2">'+
-      '<button class="btn bs doc-sch" style="flex:1;justify-content:center;font-size:12px" data-did="'+d.id+'">📋 Schedule</button>'+
-      '<button class="btn bp doc-edt" style="flex:1;justify-content:center;font-size:12px" data-did="'+d.id+'">✏️ Edit</button>'+
-      '</div></div></div>';
-  }).join('');
-
-  // Add Doctor modal HTML
-  var addDocModal =
-    '<div class="mo" id="mo-adc"><div class="mb">'+
-    '<div class="mh"><h3>Add New Doctor</h3><button class="mx" id="cx-adc">✕</button></div>'+
-    '<div class="mp sy">'+
-    '<div class="g2d">'+
-      '<div class="fc"><label class="lbl">Full Name *</label><input id="adc-nm" class="fld" placeholder="Dr. Name"></div>'+
-      '<div><label class="lbl">Specialization *</label><input id="adc-sp" class="fld" placeholder="e.g. Cardiologist"></div>'+
-      '<div><label class="lbl">Department *</label><select id="adc-dp" class="fld"><option value="">Select</option><option>Cardiology</option><option>Neurology</option><option>Orthopedics</option><option>Pediatrics</option><option>General Medicine</option><option>Gynecology</option><option>Dermatology</option><option>ENT</option></select></div>'+
-      '<div><label class="lbl">Consultation Fee (₹) *</label><input id="adc-fe" class="fld" type="number" placeholder="500"></div>'+
-      '<div><label class="lbl">Experience (Years)</label><input id="adc-ex" class="fld" type="number" placeholder="5"></div>'+
-      '<div><label class="lbl">Phone</label><input id="adc-ph" class="fld" type="tel" placeholder="+91 98765..."></div>'+
-      '<div class="fc"><label class="lbl">Available Days *</label>'+
-      '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px" id="day-pick">'+
-      ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(function(d){
-        return '<label style="display:flex;align-items:center;gap:4px;background:#f1f5f9;padding:5px 10px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500">'+
-          '<input type="checkbox" value="'+d+'" style="cursor:pointer"> '+d+'</label>';
-      }).join('')+'</div></div>'+
-      '<div class="fc"><label class="lbl">Time Slots (e.g. 09:00-13:00)</label><input id="adc-ts" class="fld" placeholder="09:00-13:00, 14:00-17:00"></div>'+
-    '</div>'+
-    '<div class="g2d" style="margin-top:4px">'+
-      '<button class="btn bs w100" style="justify-content:center" id="cc-adc">Cancel</button>'+
-      '<button class="btn bp w100" style="justify-content:center" id="sv-adc">💾 Save Doctor</button>'+
-    '</div></div></div></div>';
-
-  // Schedule modal
-  var schedModal =
-    '<div class="mo" id="mo-sch"><div class="mb" style="max-width:520px">'+
-    '<div class="mh"><h3 id="sch-title">Doctor Schedule</h3><button class="mx" id="cx-sch">✕</button></div>'+
-    '<div class="mp" id="sch-body"></div>'+
-    '</div></div>';
-
-  // Edit modal
-  var editModal =
-    '<div class="mo" id="mo-edt"><div class="mb">'+
-    '<div class="mh"><h3>Edit Doctor</h3><button class="mx" id="cx-edt">✕</button></div>'+
-    '<div class="mp sy">'+
-    '<div class="g2d">'+
-      '<div class="fc"><label class="lbl">Full Name</label><input id="edt-nm" class="fld"></div>'+
-      '<div><label class="lbl">Specialization</label><input id="edt-sp" class="fld"></div>'+
-      '<div><label class="lbl">Department</label><select id="edt-dp" class="fld"><option>Cardiology</option><option>Neurology</option><option>Orthopedics</option><option>Pediatrics</option><option>General Medicine</option><option>Gynecology</option></select></div>'+
-      '<div><label class="lbl">Consultation Fee (₹)</label><input id="edt-fe" class="fld" type="number"></div>'+
-      '<div class="fc"><label class="lbl">Available Days</label><input id="edt-dy" class="fld"></div>'+
-    '</div>'+
-    '<div class="g2d" style="margin-top:4px">'+
-      '<button class="btn bs w100" style="justify-content:center" id="cc-edt">Cancel</button>'+
-      '<button class="btn bp w100" style="justify-content:center" id="sv-edt">💾 Save Changes</button>'+
-    '</div></div></div></div>';
-
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div><h3 style="font-size:20px;font-weight:800">Doctors</h3><p class="tm" style="margin-top:3px">'+DATA.doctors.length+' doctors</p></div>'+
-    '<button class="btn bp" id="btn-adc">+ Add Doctor</button></div>'+
-    '<div class="g2d">'+cards+'</div></div>'+
-    addDocModal + schedModal + editModal;
-
-  // Add Doctor
-  ge('btn-adc').addEventListener('click',function(){openM('mo-adc');});
-  ge('cx-adc').addEventListener('click',function(){closeM('mo-adc');});
-  ge('cc-adc').addEventListener('click',function(){closeM('mo-adc');});
-  ge('mo-adc').addEventListener('click',function(e){if(e.target===this)closeM('mo-adc');});
-  ge('sv-adc').addEventListener('click',function(){
-    var nm=(ge('adc-nm').value||'').trim();
-    var sp=(ge('adc-sp').value||'').trim();
-    var dp=ge('adc-dp').value;
-    var fe=ge('adc-fe').value;
-    if(!nm||!sp||!dp||!fe){toast('All required fields fill karo','e');return;}
-    var days=[];
-    ge('day-pick').querySelectorAll('input:checked').forEach(function(cb){days.push(cb.value);});
-    var idx=DATA.doctors.length+1;
-    DATA.doctors.push({id:'d'+idx,name:nm,spec:sp,dept:dp,fee:parseInt(fe),days:days.join(',')});
-    closeM('mo-adc');
-    toast('Dr. '+nm+' added!','s');
-    showPage('doctors');
-  });
-
-  // Schedule
-  ge('cx-sch').addEventListener('click',function(){closeM('mo-sch');});
-  ge('mo-sch').addEventListener('click',function(e){if(e.target===this)closeM('mo-sch');});
-
-  ge('content').querySelectorAll('.doc-sch').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var did=btn.dataset.did;
-      var doc=DATA.doctors.find(function(d){return d.id===did;});
-      if(!doc) return;
-      ge('sch-title').textContent=doc.name+' — Schedule';
-      var sched=scheduleData[did]||[];
-      var html='';
-      if(!sched.length){
-        html='<div class="tc" style="padding:30px;color:#94a3b8"><p style="font-size:28px">📅</p><p style="margin-top:8px">No schedule set</p></div>';
-      } else {
-        html='<div style="margin-bottom:12px;display:flex;gap:10px;font-size:12px">'+
-          '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:#d1fae5;border:1px solid #10b981;display:inline-block"></span>Available</span>'+
-          '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;border-radius:3px;background:#fee2e2;border:1px solid #ef4444;display:inline-block"></span>Booked</span>'+
-          '</div>';
-        sched.forEach(function(day){
-          html+='<div style="margin-bottom:12px">'+
-            '<p style="font-weight:700;font-size:13px;color:#374151;margin-bottom:6px">'+day.day+'</p>'+
-            '<div style="display:flex;flex-wrap:wrap;gap:6px">'+
-            day.slots.map(function(slot,i){
-              var booked=day.booked.indexOf(i)>-1;
-              return '<div style="padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1.5px solid '+(booked?'#fca5a5':'#a7f3d0')+';background:'+(booked?'#fee2e2':'#d1fae5')+';color:'+(booked?'#991b1b':'#065f46')+'">'+
-                slot+(booked?' 🔒':' ✓')+'</div>';
-            }).join('')+
-            '</div></div>';
-        });
-        var totalSlots=sched.reduce(function(a,d){return a+d.slots.length;},0);
-        var bookedSlots=sched.reduce(function(a,d){return a+d.booked.length;},0);
-        html+='<div style="background:#f1f5f9;border-radius:10px;padding:12px;display:flex;justify-content:space-around;text-align:center;margin-top:6px">'+
-          '<div><p style="font-size:18px;font-weight:800;color:#0284c7">'+totalSlots+'</p><p style="font-size:12px;color:#64748b">Total Slots</p></div>'+
-          '<div><p style="font-size:18px;font-weight:800;color:#ef4444">'+bookedSlots+'</p><p style="font-size:12px;color:#64748b">Booked</p></div>'+
-          '<div><p style="font-size:18px;font-weight:800;color:#10b981">'+(totalSlots-bookedSlots)+'</p><p style="font-size:12px;color:#64748b">Available</p></div>'+
-          '</div>';
-      }
-      ge('sch-body').innerHTML=html;
-      openM('mo-sch');
-    });
-  });
-
-  // Edit
-  ge('cx-edt').addEventListener('click',function(){closeM('mo-edt');});
-  ge('cc-edt').addEventListener('click',function(){closeM('mo-edt');});
-  ge('mo-edt').addEventListener('click',function(e){if(e.target===this)closeM('mo-edt');});
-
-  ge('content').querySelectorAll('.doc-edt').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var did=btn.dataset.did;
-      var doc=DATA.doctors.find(function(d){return d.id===did;});
-      if(!doc) return;
-      ge('edt-nm').value=doc.name;
-      ge('edt-sp').value=doc.spec;
-      ge('edt-dp').value=doc.dept;
-      ge('edt-fe').value=doc.fee;
-      ge('edt-dy').value=doc.days;
-      ge('sv-edt').dataset.did=did;
-      openM('mo-edt');
-    });
-  });
-
-  ge('sv-edt').addEventListener('click',function(){
-    var did=ge('sv-edt').dataset.did;
-    var doc=DATA.doctors.find(function(d){return d.id===did;});
-    if(!doc) return;
-    doc.name=ge('edt-nm').value||doc.name;
-    doc.spec=ge('edt-sp').value||doc.spec;
-    doc.dept=ge('edt-dp').value||doc.dept;
-    doc.fee=parseInt(ge('edt-fe').value)||doc.fee;
-    doc.days=ge('edt-dy').value||doc.days;
-    closeM('mo-edt');
-    toast('Doctor updated!','s');
-    showPage('doctors');
-  });
-});
-
-// APPOINTMENTS
-reg('appointments',function(){
-  var rows=DATA.appts.map(function(a){
-    return '<tr><td><div style="width:30px;height:30px;background:#dbeafe;color:#1e40af;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700">'+a.tok+'</div></td>'+
-    '<td><strong>'+a.pt+'</strong></td><td class="tm" style="font-size:12px">'+a.dr+'</td><td class="tm">'+a.time+'</td>'+
-    '<td><span class="bdg '+(a.st==='completed'?'bng':'bnb')+'">'+a.st+'</span></td>'+
-    '<td class="tr">'+
-    (a.st==='scheduled'?'<button class="btn bg bsm done-a" data-id="'+a.id+'">✓</button> ':'')+
-    '</td></tr>';
-  }).join('');
-
-  var ptOpts=DATA.patients.map(function(p){return '<option>'+p.name+'</option>';}).join('');
-  var drOpts=DATA.doctors.map(function(d){return '<option>'+d.name+'</option>';}).join('');
-
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div><h3 style="font-size:20px;font-weight:800">Appointments</h3><p class="tm" style="margin-top:3px">Token queue</p></div>'+
-    '<button class="btn bp" id="btn-ba">+ Book</button></div>'+
-    '<div style="background:linear-gradient(135deg,#0284c7,#0369a1);border-radius:16px;padding:18px;color:#fff;display:flex;align-items:center;justify-content:space-between">'+
-    '<div><p style="color:rgba(255,255,255,.7);font-size:12px">Serving</p><p style="font-size:48px;font-weight:900;line-height:1">#2</p><p style="color:rgba(255,255,255,.7);font-size:12px">-</p></div>'+
-    '<div class="tr"><p style="color:rgba(255,255,255,.7);font-size:12px">Waiting</p><p style="font-size:34px;font-weight:800">3</p>'+
-    '<button id="btn-nt" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer">⏭ Next</button></div></div>'+
-    '<div class="tw"><div class="ts"><table><thead><tr><th>Token</th><th>Patient</th><th>Doctor</th><th>Time</th><th>Status</th><th class="tr">Action</th></tr></thead><tbody>'+rows+'</tbody></table></div></div></div>'+
-
-    '<div class="mo" id="mo-ap"><div class="mb">'+
-    '<div class="mh"><h3>Book Appointment</h3><button class="mx" id="cx-ap">✕</button></div>'+
-    '<div class="mp sy">'+
-    '<div><label class="lbl">Patient</label><select class="fld"><option>-- Select --</option>'+ptOpts+'</select></div>'+
-    '<div><label class="lbl">Doctor</label><select class="fld"><option>-- Select --</option>'+drOpts+'</select></div>'+
-    '<div class="g2d"><div><label class="lbl">Date</label><input class="fld" type="date" value="2026-03-10"></div>'+
-    '<div><label class="lbl">Time</label><input class="fld" type="time" value="10:00"></div></div>'+
-    '<div><label class="lbl">Type</label><select class="fld"><option>Scheduled</option><option>Walk-in</option><option>Follow-up</option><option>Emergency</option></select></div>'+
-    '<div class="g2d"><button class="btn bs w100" style="justify-content:center" id="cc-ap">Cancel</button>'+
-    '<button class="btn bp w100" style="justify-content:center" id="sv-ap">📅 Book</button></div>'+
-    '</div></div></div>';
-
-  ge('btn-ba').addEventListener('click',function(){openM('mo-ap');});
-  ge('cx-ap').addEventListener('click',function(){closeM('mo-ap');});
-  ge('cc-ap').addEventListener('click',function(){closeM('mo-ap');});
-  ge('mo-ap').addEventListener('click',function(e){if(e.target===this)closeM('mo-ap');});
-  ge('sv-ap').addEventListener('click',function(){closeM('mo-ap');toast('Appointment booked!','s');});
-  ge('btn-nt').addEventListener('click',function(){toast('Token #3 called — Suresh Verma','i');});
-  ge('content').querySelectorAll('.done-a').forEach(function(b){
-    b.addEventListener('click',function(){
-      var row=b.closest('tr');
-      row.querySelector('.bdg').className='bdg bng';
-      row.querySelector('.bdg').textContent='completed';
-      b.remove();
-      toast('Marked complete','s');
-    });
-  });
-});
-
-// BILLING
-reg('billing',function(){
-  var brows=DATA.bills.map(function(b){
-    return '<tr><td><code style="background:#f1f5f9;padding:2px 8px;border-radius:6px;font-size:11px">'+b.no+'</code></td>'+
-    '<td><strong>'+b.pt+'</strong></td>'+
-    '<td><span class="bdg bnb">'+b.type+'</span></td>'+
-    '<td style="font-weight:700;color:#0284c7">'+cur(b.amt)+'</td>'+
-    '<td><span class="bdg '+(b.st==='paid'?'bng':'bna')+'">'+b.st+'</span></td>'+
-    '<td class="tr"><button class="btn bs bsm prnt-b" data-no="'+b.no+'" data-pt="'+b.pt+'" data-amt="'+b.amt+'">🖨️</button></td></tr>';
-  }).join('');
-
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div><h3 style="font-size:20px;font-weight:800">Billing</h3><p class="tm" style="margin-top:3px">Invoices & payments</p></div>'+
-    '<button class="btn bp" id="btn-nb">+ New Bill</button></div>'+
-    '<div class="g4d">'+sc("Today",cur(45280),'💰','#10b981','#d1fae5','Revenue')+sc('This Week',cur(285000),'📈','#0284c7','#dbeafe','Total')+sc('Pending',cur(12500),'⏰','#f59e0b','#fef3c7','5 bills')+sc('Insurance',cur(38000),'🛡️','#8b5cf6','#ede9fe','3 claims')+'</div>'+
-    '<div class="tw"><div class="ts"><table><thead><tr><th>Bill No.</th><th>Patient</th><th>Type</th><th>Amount</th><th>Status</th><th class="tr">Action</th></tr></thead><tbody>'+brows+'</tbody></table></div></div></div>'+
-
-    '<div class="mo" id="mo-rc"><div class="mb" style="max-width:400px">'+
-    '<div class="mh"><h3>Receipt</h3><button class="mx" id="cx-rc">✕</button></div>'+
-    '<div class="mp" id="rc-body"></div>'+
-    '<div style="padding:0 20px 20px;display:flex;gap:10px">'+
-    '<button class="btn bp" style="flex:1;justify-content:center" id="do-pr">🖨️ Print</button>'+
-    '<button class="btn bs" style="flex:1;justify-content:center" id="cl-rc">Close</button>'+
-    '</div></div></div>';
-
-  ge('btn-nb').addEventListener('click',function(){toast('New bill form — connect backend','i');});
-  ge('cx-rc').addEventListener('click',function(){closeM('mo-rc');});
-  ge('cl-rc').addEventListener('click',function(){closeM('mo-rc');});
-  ge('mo-rc').addEventListener('click',function(e){if(e.target===this)closeM('mo-rc');});
-  ge('do-pr').addEventListener('click',function(){
-    var body=ge('rc-body');
-    if(!body) return;
-    try{
-      var w=window.open('','_blank');
-      if(!w){toast('Allow popups to print','w');return;}
-      var html='<!DOCTYPE html><html><head><title>Receipt</title>';
-      html+='<style>body{font-family:system-ui;padding:20px;max-width:380px;margin:auto}</style>';
-      html+='<\/head><body>'+body.innerHTML+'<\/body><\/html>';
-      w.document.write(html);
-      w.document.close();
-      setTimeout(function(){w.print();},400);
-    }catch(ex){toast('Print error','e');}
-  });
-  ge('content').querySelectorAll('.prnt-b').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var no=btn.dataset.no, pt=btn.dataset.pt, amt=cur(parseInt(btn.dataset.amt));
-      ge('rc-body').innerHTML=
-        '<div style="text-align:center;margin-bottom:16px">'+
-        '<div style="width:44px;height:44px;background:#0284c7;border-radius:12px;font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px">🏥</div>'+
-        '<h3 style="font-weight:800">MediCore Hospital</h3>'+
-        '<p style="font-size:12px;color:#64748b;margin:3px 0">GST: 27AAAAA0000A1Z5</p></div>'+
-        '<div style="border:1.5px dashed #e2e8f0;border-radius:10px;padding:14px;margin-bottom:14px">'+
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:#64748b">Bill No.</span><strong>'+no+'</strong></div>'+
-        '<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:#64748b">Patient</span><strong>'+pt+'</strong></div>'+
-        '<div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748b">Date</span><span>'+new Date().toLocaleDateString('en-IN')+'</span></div></div>'+
-        '<div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:#0284c7;padding:10px 0;border-top:1px solid #f1f5f9"><span>Total</span><span>'+amt+'</span></div>'+
-        '<div style="background:#d1fae5;border-radius:10px;padding:12px;text-align:center;margin-top:10px">'+
-        '<p style="font-size:22px">✅</p>'+
-        '<p style="font-weight:700;color:#065f46">Payment Received</p>'+
-        '<p style="font-size:12px;color:#64748b;margin-top:4px">Thank you for choosing MediCore</p></div>';
-      openM('mo-rc');
-    });
-  });
-});
-
-// Simple pages
-reg('opd',function(){
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div><h3 style="font-size:20px;font-weight:800">OPD Consultation</h3><p class="tm" style="margin-top:3px">Consultations & prescriptions</p></div>'+
-    '<button class="btn bp" id="btn-nc">+ New Consultation</button></div>'+
-    '<div class="g3d">'+sc("Today's OPD",'24','🩺','#0284c7','#dbeafe','Visits')+sc('Prescriptions','18','💊','#10b981','#d1fae5','Issued')+sc('Lab Referred','9','🧪','#8b5cf6','#ede9fe','Tests')+'</div>'+
-    '<div class="tw"><div class="ts"><table><thead><tr><th>Patient</th><th>Doctor</th><th>Diagnosis</th><th>Time</th></tr></thead><tbody>'+
-    [].map(function(r){
-      return '<tr><td><strong>'+r[0]+'</strong></td><td class="tm" style="font-size:12px">'+r[1]+'</td><td>'+r[2]+'</td><td class="tm">'+r[3]+'</td></tr>';
-    }).join('')+'</tbody></table></div></div></div>';
-  ge('btn-nc').addEventListener('click',function(){toast('Connect backend for full OPD','i');});
-});
-
-reg('ipd',function(){
-  var wards=[['General Ward',22,30,'#0284c7','#dbeafe'],['ICU',7,10,'#ef4444','#fee2e2'],['Maternity',8,15,'#ec4899','#fce7f3'],['Pediatric',5,12,'#10b981','#d1fae5']];
-  var beds=Array.from({length:30},function(_,i){
-    var occ=[0,2,4,6,8,10,12,14,16,18,19,20,22,24,26].indexOf(i)>-1;
-    return '<div title="Bed '+(i+1)+' — '+(occ?'Occupied':'Free')+'" style="aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;cursor:pointer;border:2px solid '+(occ?'#0369a1':'#a7f3d0')+';background:'+(occ?'#0284c7':'#ecfdf5')+';color:'+(occ?'#fff':'#065f46')+'">'+'🛏'+(i+1)+'</div>';
-  }).join('');
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div><h3 style="font-size:20px;font-weight:800">IPD / Wards</h3><p class="tm" style="margin-top:3px">Admissions & beds</p></div>'+
-    '<button class="btn bp" id="btn-adm">+ Admit Patient</button></div>'+
-    '<div class="g2d">'+wards.map(function(w){
-      var pct=Math.round(w[1]/w[2]*100);
-      return '<div class="card" style="padding:14px">'+
-        '<div class="row sb" style="margin-bottom:8px"><strong>'+w[0]+'</strong><span class="bdg" style="background:'+w[4]+';color:'+w[3]+'">'+w[1]+'/'+w[2]+'</span></div>'+
-        '<div class="pb"><div class="pf" style="width:'+pct+'%;background:'+w[3]+'"></div></div>'+
-        '<div class="row sb" style="margin-top:5px"><span class="tm" style="font-size:12px">'+(w[2]-w[1])+' free</span><span style="font-size:12px;font-weight:700;color:'+w[3]+'">'+pct+'%</span></div></div>';
-    }).join('')+'</div>'+
-    '<div class="card" style="padding:18px"><h4 style="font-weight:700;margin-bottom:12px">General Ward — Bed Map</h4>'+
-    '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px">'+beds+'</div>'+
-    '<div class="row g2" style="margin-top:10px;font-size:12px">'+
-    '<div class="row g2"><div style="width:12px;height:12px;border-radius:3px;background:#0284c7"></div>Occupied</div>'+
-    '<div class="row g2"><div style="width:12px;height:12px;border-radius:3px;background:#ecfdf5;border:1px solid #a7f3d0"></div>Free</div>'+
-    '</div></div></div>';
-  ge('btn-adm').addEventListener('click',function(){toast('Admit form — connect backend','i');});
-});
-
-reg('laboratory',function(){
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div><h3 style="font-size:20px;font-weight:800">Laboratory</h3><p class="tm" style="margin-top:3px">Tests & reports</p></div>'+
-    '<button class="btn bp" id="btn-nl">+ New Order</button></div>'+
-    '<div class="g4d">'+sc('Pending','12','⏰','#f59e0b','#fef3c7','Awaiting')+sc('In Progress','5','⏳','#0284c7','#dbeafe','Processing')+sc('Completed','28','✅','#10b981','#d1fae5','Today')+sc('Ready','22','📋','#8b5cf6','#ede9fe','Download')+'</div>'+
-    '<div class="tw"><div class="ts"><table><thead><tr><th>Order ID</th><th>Patient</th><th>Tests</th><th>Amount</th><th>Status</th></tr></thead><tbody>'+
-    [].map(function(r){
-      return '<tr><td><code style="background:#f1f5f9;padding:2px 8px;border-radius:6px;font-size:11px">'+r[0]+'</code></td>'+
-      '<td><strong>'+r[1]+'</strong></td><td class="tm">'+r[2]+'</td><td style="font-weight:700">'+cur(r[3])+'</td>'+
-      '<td><span class="bdg '+(r[4]==='completed'?'bng':r[4]==='in-progress'?'bnb':'bna')+'">'+r[4]+'</span></td></tr>';
-    }).join('')+'</tbody></table></div></div></div>';
-  ge('btn-nl').addEventListener('click',function(){toast('Lab order — connect backend','i');});
-});
-
-reg('staff',function(){
-  var sdata=[['Meena Sharma','Receptionist','Front Desk','active'],['Raju Patel','Nurse','General Ward','active'],['Seema Verma','Lab Tech','Pathology','active'],['Anil Kumar','Nurse','ICU','on-leave']];
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div><h3 style="font-size:20px;font-weight:800">Staff</h3><p class="tm" style="margin-top:3px">Roles & attendance</p></div>'+
-    '<button class="btn bp" id="btn-as">+ Add Staff</button></div>'+
-    '<div class="g4d">'+sc('Receptionist','4','🎧','#0284c7','#dbeafe','')+sc('Nurses','12','👩‍⚕️','#10b981','#d1fae5','')+sc('Lab Techs','6','🔬','#8b5cf6','#ede9fe','')+sc('Admins','3','🛡️','#f59e0b','#fef3c7','')+'</div>'+
-    '<div class="tw"><div class="ts"><table><thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Status</th></tr></thead><tbody>'+
-    sdata.map(function(s){
-      return '<tr><td><div class="row g2"><div class="av" style="background:#dbeafe;color:#1e40af">'+s[0][0]+'</div><strong>'+s[0]+'</strong></div></td>'+
-      '<td><span class="bdg bnb">'+s[1]+'</span></td><td class="tm">'+s[2]+'</td>'+
-      '<td><span class="bdg '+(s[3]==='active'?'bng':'bna')+'">'+s[3]+'</span></td></tr>';
-    }).join('')+'</tbody></table></div></div></div>';
-  ge('btn-as').addEventListener('click',function(){toast('Add staff — connect backend','i');});
-});
-
-reg('inventory',function(){
-  var items=[['Paracetamol 500mg','Medicines',2400,'tabs','Dec 2026',false],['Surgical Gloves (L)','PPE',45,'boxes','Jun 2026',true],['IV Cannula 20G','Consumables',320,'units','Aug 2026',false],['Blood Glucose Strips','Lab Reagents',8,'boxes','Nov 2025',true]];
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div class="row sb"><div><h3 style="font-size:20px;font-weight:800">Inventory</h3><p class="tm" style="margin-top:3px">Stock & supplies</p></div>'+
-    '<button class="btn bp" id="btn-ai">+ Add Item</button></div>'+
-    '<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px">'+
-    '<span style="font-size:20px;flex-shrink:0">⚠️</span>'+
-    '<div><p style="font-weight:600;color:#92400e;margin:0">2 items below reorder level</p><p style="font-size:13px;color:#b45309;margin:3px 0 0">Surgical Gloves, Blood Glucose Strips</p></div></div>'+
-    '<div class="tw"><div class="ts"><table><thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Expiry</th><th class="tr">Action</th></tr></thead><tbody>'+
-    items.map(function(it){
-      return '<tr><td><strong>'+it[0]+'</strong>'+(it[5]?'<br><span style="font-size:11px;color:#f59e0b;font-weight:600">⚠️ Low stock</span>':'')+'</td>'+
-      '<td><span class="bdg bnb">'+it[1]+'</span></td>'+
-      '<td><strong style="color:'+(it[5]?'#f59e0b':'#10b981')+'">'+it[2]+'</strong> <span class="tm" style="font-size:12px">'+it[3]+'</span></td>'+
-      '<td class="tm">'+it[4]+'</td>'+
-      '<td class="tr"><button class="btn bg bsm st-add">+</button></td></tr>';
-    }).join('')+'</tbody></table></div></div></div>';
-  ge('btn-ai').addEventListener('click',function(){toast('Add item — connect backend','i');});
-  ge('content').querySelectorAll('.st-add').forEach(function(b){b.addEventListener('click',function(){toast('Stock +10 added','s');});});
-});
-
-reg('reports',function(){
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div><h3 style="font-size:20px;font-weight:800">Reports & Analytics</h3><p class="tm" style="margin-top:3px">Insights & exports</p></div>'+
-    '<div class="g4d">'+sc('Patients','1,247','👥','#0284c7','#dbeafe','+12%')+sc('Revenue',cur(842500),'💰','#10b981','#d1fae5','+18%')+sc('OPD Visits','892','🩺','#8b5cf6','#ede9fe','+9%')+sc('Lab Tests','456','🧪','#f59e0b','#fef3c7','+22%')+'</div>'+
-    '<div class="card" style="padding:18px"><h4 style="font-weight:700;margin-bottom:12px;font-size:14px">Monthly Revenue</h4><canvas id="rch" height="180"></canvas></div>'+
-    '<div class="g2d">'+['Patient Visits','Billing Summary','Doctor Revenue','Lab Tests','IPD Admissions','Inventory'].map(function(r){
-      return '<div class="card" style="padding:14px"><p style="font-weight:600;margin-bottom:10px">'+r+'</p>'+
-      '<div class="row g2">'+
-      '<button class="btn bs bsm rpt-btn" style="flex:1;justify-content:center" data-t="PDF">📕 PDF</button>'+
-      '<button class="btn bs bsm rpt-btn" style="flex:1;justify-content:center" data-t="Excel">📗 Excel</button>'+
-      '</div></div>';
-    }).join('')+'</div></div>';
-  setTimeout(function(){
-    try{
-      var ctx=ge('rch');
-      if(ctx) new Chart(ctx,{type:'line',data:{labels:['Oct','Nov','Dec','Jan','Feb','Mar'],datasets:[{data:[580000,720000,690000,810000,760000,842500],borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',borderWidth:2,tension:.4,fill:true}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#94a3b8',callback:function(v){return'\u20B9'+(v/1000)+'k';}},grid:{color:'rgba(0,0,0,.05)'}},x:{ticks:{color:'#94a3b8'},grid:{display:false}}}}});
-    }catch(e){}
-  },100);
-  ge('content').querySelectorAll('.rpt-btn').forEach(function(b){b.addEventListener('click',function(){toast('Generating '+b.dataset.t+'...','i');});});
-});
-
-reg('settings',function(){
-  var hn=(S.hospital&&S.hospital.name)||'MediCore Hospital';
-  ge('content').innerHTML='<div class="sy2 pg">'+
-    '<div><h3 style="font-size:20px;font-weight:800">Settings</h3><p class="tm" style="margin-top:3px">Hospital & account config</p></div>'+
-    '<div class="card" style="padding:20px"><h4 style="font-weight:700;margin-bottom:16px">Hospital Profile</h4>'+
-    '<div class="sy"><div class="fc"><label class="lbl">Hospital Name</label><input class="fld" value="'+hn+'"></div>'+
-    '<div class="g2d"><div><label class="lbl">Phone</label><input class="fld" placeholder="+91-22-12345678"></div>'+
-    '<div><label class="lbl">GST Number</label><input class="fld" placeholder="27AAAAA0000A1Z5"></div></div>'+
-    '<div class="fc"><label class="lbl">Address</label><textarea class="fld" rows="2" style="resize:none" placeholder="Hospital address"></textarea></div>'+
-    '<div><button class="btn bp" id="btn-ss">💾 Save Changes</button></div></div></div>'+
-    '<div class="card" style="padding:20px"><h4 style="font-weight:700;margin-bottom:16px">Change Password</h4>'+
-    '<div class="sy" style="max-width:360px">'+
-    '<div><label class="lbl">Current Password</label><input class="fld" type="password" placeholder="••••••••"></div>'+
-    '<div><label class="lbl">New Password</label><input class="fld" type="password" placeholder="••••••••"></div>'+
-    '<div><label class="lbl">Confirm</label><input class="fld" type="password" placeholder="••••••••"></div>'+
-    '<div><button class="btn bp" id="btn-cp">🔒 Change Password</button></div></div></div></div>';
-  ge('btn-ss').addEventListener('click',function(){toast('Settings saved!','s');});
-  ge('btn-cp').addEventListener('click',function(){toast('Password changed!','s');});
-});
-
-// INIT
-document.addEventListener('DOMContentLoaded',function(){
-  applyDark();
-
-  // Login tab switch
-  ge('tab-in').addEventListener('click',function(){
-    ge('fi').style.display=''; ge('fr').style.display='none';
-    ge('tab-in').classList.add('on'); ge('tab-reg').classList.remove('on');
-  });
-  ge('tab-reg').addEventListener('click',function(){
-    ge('fr').style.display=''; ge('fi').style.display='none';
-    ge('tab-reg').classList.add('on'); ge('tab-in').classList.remove('on');
-  });
-
-  // Login / Register
-  ge('btn-li').addEventListener('click',doLogin);
-  ge('btn-rg').addEventListener('click',doRegister);
-  ge('si-pw').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-  ge('rg-pw').addEventListener('keydown',function(e){if(e.key==='Enter')doRegister();});
-
-  // Nav
-  document.querySelectorAll('.nav-btn').forEach(function(b){
-    b.addEventListener('click',function(){if(b.dataset.p)showPage(b.dataset.p);});
-  });
-
-  // Logout
-  ge('btn-lo').addEventListener('click',doLogout);
-
-  // Sidebar toggle
-  ge('menu-btn').addEventListener('click',toggleSB);
-  ge('ov').addEventListener('click',closeSB);
-
-  // Dark mode
-  ge('btn-dk').addEventListener('click',function(){
-    S.dark=!S.dark;
-    try{localStorage.setItem('dk',S.dark?'1':'0');}catch(x){}
-    applyDark();
-  });
-
-  
+function logout() {
+  localStorage.removeItem('token');
+  S={user:null,hospital:null};
+  ge('app').style.display='none';
+  ge('lp').style.display='flex';
+}
+</script>
+</body>
+</html>
