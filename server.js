@@ -1,83 +1,142 @@
-require("dotenv").config();
+require('dotenv').config();
 
-const express = require("express");
-const cors = require("cors");
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 const app = express();
 
-// Security
-app.use(helmet());
+/* =========================
+   SECURITY MIDDLEWARE
+========================= */
+
+app.use(helmet({ contentSecurityPolicy: false }));
+
 app.use(cors({
-  origin: "*"
+  origin: process.env.FRONTEND_URL || '*',
+  credentials: true
 }));
 
-// Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+/* =========================
+   RATE LIMIT
+========================= */
 
-// Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200
 });
 
-app.use("/api", limiter);
+app.use('/api/', limiter);
 
-// Root route (Railway health check)
-app.get("/", (req, res) => {
+/* =========================
+   BODY PARSER
+========================= */
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+/* =========================
+   STATIC FRONTEND (OPTIONAL)
+========================= */
+
+try {
+  app.use(express.static(path.join(__dirname, 'public')));
+} catch (err) {
+  console.log("No public folder found");
+}
+
+/* =========================
+   ROOT HEALTHCHECK
+========================= */
+
+app.get('/', (req, res) => {
   res.json({
-    status: "ok",
-    service: "Medicore HMS Backend",
-    version: "1.0",
-    time: new Date()
+    status: 'ok',
+    service: 'MediCore HMS Backend',
+    time: new Date().toISOString()
   });
 });
 
-// Health API
-app.get("/api/health", (req, res) => {
+/* =========================
+   API HEALTHCHECK
+========================= */
+
+app.get('/api/health', (req, res) => {
   res.json({
-    status: "healthy"
+    status: 'ok',
+    service: 'MediCore HMS',
+    uptime: process.uptime()
   });
 });
 
-/* ==============================
-   HMS API ROUTES
-============================== */
+/* =========================
+   SAFE ROUTE LOADER
+========================= */
 
-app.use("/api/auth", require("./routes/auth"));
-app.use("/api/hospitals", require("./routes/hospitals"));
-app.use("/api/patients", require("./routes/patients"));
-app.use("/api/doctors", require("./routes/doctors"));
-app.use("/api/appointments", require("./routes/appointments"));
-app.use("/api/opd", require("./routes/opd"));
-app.use("/api/ipd", require("./routes/ipd"));
-app.use("/api/lab", require("./routes/laboratory"));
-app.use("/api/billing", require("./routes/billing"));
-app.use("/api/staff", require("./routes/staff"));
-app.use("/api/inventory", require("./routes/inventory"));
-app.use("/api/reports", require("./routes/reports"));
-app.use("/api/dashboard", require("./routes/dashboard"));
+function loadRoute(path, routeFile) {
+  try {
+    app.use(path, require(routeFile));
+    console.log(`Loaded route: ${path}`);
+  } catch (err) {
+    console.error(`Failed to load route ${path}:`, err.message);
+  }
+}
 
-/* ==============================
+/* =========================
+   HMS ROUTES
+========================= */
+
+loadRoute('/api/auth', './routes/auth');
+loadRoute('/api/hospitals', './routes/hospitals');
+loadRoute('/api/patients', './routes/patients');
+loadRoute('/api/doctors', './routes/doctors');
+loadRoute('/api/appointments', './routes/appointments');
+loadRoute('/api/opd', './routes/opd');
+loadRoute('/api/ipd', './routes/ipd');
+loadRoute('/api/lab', './routes/laboratory');
+loadRoute('/api/billing', './routes/billing');
+loadRoute('/api/staff', './routes/staff');
+loadRoute('/api/inventory', './routes/inventory');
+loadRoute('/api/reports', './routes/reports');
+loadRoute('/api/dashboard', './routes/dashboard');
+
+/* =========================
+   FRONTEND FALLBACK
+========================= */
+
+app.get('*', (req, res) => {
+  try {
+    res.sendFile(path.join(__dirname, 'public/index.html'));
+  } catch (err) {
+    res.json({
+      message: "MediCore HMS API running"
+    });
+  }
+});
+
+/* =========================
    ERROR HANDLER
-============================== */
+========================= */
 
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error(err.stack);
+
   res.status(500).json({
-    error: "Internal Server Error",
+    error: 'Internal server error',
     message: err.message
   });
 });
 
-/* ==============================
-   SERVER START
-============================== */
+/* =========================
+   START SERVER
+========================= */
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🏥 MediCore HMS Server running on port ${PORT}`);
+  console.log(`🏥 HMS Server running on port ${PORT}`);
 });
+
+module.exports = app;
