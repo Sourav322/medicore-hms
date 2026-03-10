@@ -1,218 +1,172 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Hospital Management System</title>
-<style>
-  #app { display: none; flex-direction: column; }
-  /* your existing styles here */
-</style>
-</head>
-<body>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediCore HMS</title><style>
 
-<div id="lp" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;">
-  <h2>Login</h2>
-  <input id="login-un" placeholder="Username" />
-  <input id="login-pw" placeholder="Password" type="password" />
-  <button id="btn-login">Login</button>
-  <button id="btn-register">Register</button>
-</div>
-
-<div id="app" style="display:none; flex-direction:column; height:100vh;">
-  <div style="display:flex; justify-content:space-between; padding:10px; background:#ccc;">
-    <div>Welcome, <span id="sb-un"></span></div>
-    <div>Role: <span id="sb-ro"></span></div>
-    <div>Hospital: <span id="sb-hn"></span></div>
-    <div><button onclick="logout()">Logout</button></div>
-  </div>
-
-  <div id="dashboard" style="padding:10px;">
-    <h2>Dashboard</h2>
-    <button onclick="showPage('patients')">Manage Patients</button>
-    <button onclick="showPage('doctors')">Manage Doctors</button>
-    <button onclick="showPage('appointments')">Manage Appointments</button>
-    <button onclick="showPage('bills')">Manage Bills</button>
-  </div>
-
-  <div id="patients" style="display:none;">
-    <h2>Patients</h2>
-    <button onclick="showForm('patients')">Add Patient</button>
-    <table border="1" width="100%">
-      <thead><tr><th>Uhid</th><th>Name</th></tr></thead>
-      <tbody id="patients-tbody"></tbody>
-    </table>
-  </div>
-
-  <div id="doctors" style="display:none;">
-    <h2>Doctors</h2>
-    <button onclick="showForm('doctors')">Add Doctor</button>
-    <table border="1" width="100%">
-      <thead><tr><th>Name</th><th>Spec</th></tr></thead>
-      <tbody id="doctors-tbody"></tbody>
-    </table>
-  </div>
-
-  <div id="appointments" style="display:none;">
-    <h2>Appointments</h2>
-    <button onclick="showForm('appointments')">Add Appointment</button>
-    <table border="1" width="100%">
-      <thead><tr><th>Token</th><th>Patient</th><th>Doctor</th></tr></thead>
-      <tbody id="appointments-tbody"></tbody>
-    </table>
-  </div>
-
-  <div id="bills" style="display:none;">
-    <h2>Bills</h2>
-    <button onclick="showForm('bills')">Add Bill</button>
-    <table border="1" width="100%">
-      <thead><tr><th>No</th><th>Patient</th><th>Amount</th></tr></thead>
-      <tbody id="bills-tbody"></tbody>
-    </table>
-  </div>
-</div>
-
-<script>
-var API_URL='https://web-production-d347.up.railway.app/api';
-
-var S={user:null, hospital:null};
-var DATA={patients:[], doctors:[], appts:[], bills:[]};
-
-document.addEventListener('DOMContentLoaded', ()=> {
-  ge('btn-login').onclick=login;
-  ge('btn-register').onclick=register;
-});
-
-function ge(id){return document.getElementById(id);}
-
-function api(method, path, data=null) {
-  return fetch(API_URL+path, {
-    method: method,
-    headers: {'Content-Type':'application/json'},
-    body: data ? JSON.stringify(data) : null,
-  }).then(r=>r.json());
+body{
+font-family:system-ui;
+margin:0;
+background:#f1f5f9;
+color:#0f172a;
 }
 
-function login() {
-  var un=ge('login-un').value;
-  var pw=ge('login-pw').value;
-  api('POST','/login',{un,pw}).then(res=>{
-    if(res.token){
-      S.user=res.user;
-      S.token=res.token;
-      localStorage.setItem('token',res.token);
-      launchApp();
-    } else alert('Login failed');
-  });
+header{
+background:#0f172a;
+color:white;
+padding:14px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-weight:700;
 }
 
-function register() {
-  var un=ge('login-un').value;
-  var pw=ge('login-pw').value;
-  api('POST','/register',{un,pw}).then(res=>{
-    if(res.token){
-      S.user=res.user;
-      S.token=res.token;
-      localStorage.setItem('token',res.token);
-      launchApp();
-    } else alert('Register failed');
-  });
+.container{
+padding:16px;
+max-width:1100px;
+margin:auto;
 }
 
-function launchApp() {
-  ge('lp').style.display='none';
-  ge('app').style.display='flex';
-
-  if(S.user){
-    ge('sb-un').textContent=S.user.name;
-    ge('sb-ro').textContent=(S.user.role||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-    ge('sb-av').textContent=S.user.name[0].toUpperCase();
-  }
-  // For production, fetch real data
-  fetchInitialData();
-
-  showPage('dashboard');
+.card{
+background:white;
+border-radius:12px;
+padding:16px;
+margin-bottom:16px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
 
-function fetchInitialData() {
-  // Fetch Patients
-  api('GET','/patients').then(patients=>{
-    DATA.patients=patients;
-    renderPatients();
-  }).catch(()=>{DATA.patients=[]; renderPatients();});
-  // Fetch Doctors
-  api('GET','/doctors').then(doctors=>{
-    DATA.doctors=doctors;
-    renderDoctors();
-  }).catch(()=>{DATA.doctors=[]; renderDoctors();});
-  // Fetch Appointments
-  api('GET','/appointments').then(appts=>{
-    DATA.appts=appts;
-    renderAppointments();
-  }).catch(()=>{DATA.appts=[]; renderAppointments();});
-  // Fetch Bills
-  api('GET','/bills').then(bills=>{
-    DATA.bills=bills;
-    renderBills();
-  }).catch(()=>{DATA.bills=[]; renderBills();});
+input,select{
+width:100%;
+padding:10px;
+border-radius:8px;
+border:1px solid #ddd;
+margin-top:6px;
+margin-bottom:10px;
 }
 
-function showPage(page) {
-  ['dashboard','patients','doctors','appointments','bills'].forEach(p=>ge(p).style.display='none');
-  ge(page).style.display='block';
+button{
+padding:10px 16px;
+border:none;
+border-radius:8px;
+cursor:pointer;
+background:#0284c7;
+color:white;
+font-weight:600;
 }
 
-function showForm(page) {
-  // Implement form show/hide if needed
+button:hover{
+background:#0369a1;
 }
 
-// Render functions
-function renderPatients() {
-  var tbody=ge('patients-tbody');
-  tbody.innerHTML='';
-  DATA.patients.forEach(p=>{
-    var tr=document.createElement('tr');
-    tr.innerHTML=`<td>${p.uhid}</td><td>${p.name}</td>`;
-    tbody.appendChild(tr);
-  });
+table{
+width:100%;
+border-collapse:collapse;
 }
 
-function renderDoctors() {
-  var tbody=ge('doctors-tbody');
-  tbody.innerHTML='';
-  DATA.doctors.forEach(d=>{
-    var tr=document.createElement('tr');
-    tr.innerHTML=`<td>${d.name}</td><td>${d.spec}</td>`;
-    tbody.appendChild(tr);
-  });
+th,td{
+padding:10px;
+border-bottom:1px solid #eee;
+text-align:left;
 }
 
-function renderAppointments() {
-  var tbody=ge('appointments-tbody');
-  tbody.innerHTML='';
-  DATA.appts.forEach(a=>{
-    var tr=document.createElement('tr');
-    tr.innerHTML=`<td>${a.tok}</td><td>${a.pt}</td><td>${a.dr}</td>`;
-    tbody.appendChild(tr);
-  });
+th{
+background:#f8fafc;
+font-size:12px;
 }
 
-function renderBills() {
-  var tbody=ge('bills-tbody');
-  tbody.innerHTML='';
-  DATA.bills.forEach(b=>{
-    var tr=document.createElement('tr');
-    tr.innerHTML=`<td>${b.no}</td><td>${b.pt}</td><td>${b.amt}</td>`;
-    tbody.appendChild(tr);
-  });
+@media(max-width:768px){
+
+table{
+font-size:12px;
 }
 
-function logout() {
-  localStorage.removeItem('token');
-  S={user:null,hospital:null};
-  ge('app').style.display='none';
-  ge('lp').style.display='flex';
 }
-</script>
-</body>
+
+</style></head><body><header>
+<span>🏥 MediCore HMS</span>
+<span id="status">Connecting...</span>
+</header><div class="container"><div class="card"><h3>Add Patient</h3><input id="name" placeholder="Patient Name">
+<input id="age" placeholder="Age" type="number"><select id="gender">
+<option value="">Gender</option>
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select><input id="phone" placeholder="Phone"><button onclick="addPatient()">Save Patient</button>
+
+</div><div class="card"><h3>Patients</h3><table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Age</th>
+<th>Gender</th>
+<th>Phone</th>
+</tr>
+</thead><tbody id="patients"></tbody></table></div></div><script>
+
+const API = "https://web-production-d347.up.railway.app/api"
+
+async function loadPatients(){
+
+try{
+
+const res = await fetch(API+"/patients")
+const data = await res.json()
+
+document.getElementById("status").innerText="Connected"
+
+const table=document.getElementById("patients")
+
+table.innerHTML=""
+
+data.patients.forEach(p=>{
+
+table.innerHTML+=`
+<tr>
+<td>${p.name}</td>
+<td>${p.age}</td>
+<td>${p.gender}</td>
+<td>${p.phone}</td>
+</tr>
+`
+
+})
+
+}catch(e){
+
+document.getElementById("status").innerText="Server Offline"
+
+}
+
+}
+
+async function addPatient(){
+
+const body={
+name:document.getElementById("name").value,
+age:document.getElementById("age").value,
+gender:document.getElementById("gender").value,
+phone:document.getElementById("phone").value
+}
+
+await fetch(API+"/patients",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify(body)
+
+})
+
+alert("Patient Added")
+
+loadPatients()
+
+}
+
+loadPatients()
+
+</script></body>
 </html>
