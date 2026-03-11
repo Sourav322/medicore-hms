@@ -252,6 +252,8 @@ select.fld option{background:#0d2035;}
 .reveal{opacity:0;transform:translateY(30px);transition:.7s ease;}
 .reveal.visible{opacity:1;transform:none;}
 </style>
+  <!-- Cashfree SDK -->
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 </head>
 <body>
 
@@ -414,7 +416,7 @@ select.fld option{background:#0d2035;}
       <div class="plan-feat"><span class="chk">✓</span> OPD + IPD + Lab billing</div>
       <div class="plan-feat"><span class="chk">✓</span> Bill print + PDF</div>
       <div class="plan-feat"><span class="cross">✕</span> Reports & Analytics</div>
-      <button class="plan-btn outline" onclick="openSignup('basic')">Get Started</button>
+      <button class="plan-btn outline" onclick="openPlanCheckout('basic')">🚀 Get Started</button>
     </div>
 
     <!-- PRO (FEATURED) -->
@@ -431,7 +433,7 @@ select.fld option{background:#0d2035;}
       <div class="plan-feat"><span class="chk">✓</span> Reports & Analytics</div>
       <div class="plan-feat"><span class="chk">✓</span> Discharge billing</div>
       <div class="plan-feat"><span class="chk">✓</span> Priority support</div>
-      <button class="plan-btn solid" onclick="openSignup('pro')">Start Free Trial</button>
+      <button class="plan-btn solid" onclick="openPlanCheckout('pro')">🚀 Get Started</button>
     </div>
 
     <!-- ENTERPRISE -->
@@ -446,7 +448,7 @@ select.fld option{background:#0d2035;}
       <div class="plan-feat"><span class="chk">✓</span> Custom branding</div>
       <div class="plan-feat"><span class="chk">✓</span> Dedicated support</div>
       <div class="plan-feat"><span class="chk">✓</span> Custom features</div>
-      <button class="plan-btn outline" onclick="openSignup('enterprise')">Contact Us</button>
+      <button class="plan-btn outline" onclick="openPlanCheckout('enterprise')">🚀 Get Started</button>
     </div>
 
     <!-- CUSTOM -->
@@ -534,7 +536,7 @@ select.fld option{background:#0d2035;}
       <p style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:16px;">Pune, Maharashtra se hoon. MediCore banaya Indian hospitals ke liye — simple, fast aur affordable. Koi bhi hospital 10 minute mein digital ho sake, yahi mera sapna hai.</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <a href="https://wa.me/917972425585" target="_blank" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:9px;color:#34d399;font-size:13px;font-weight:600;text-decoration:none;">📱 WhatsApp: 7972425585</a>
-        <a href="mailto:sparklineworldtechnology@gmail.com" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25);border-radius:9px;color:var(--sky);font-size:13px;font-weight:600;text-decoration:none;">✉️ sparklineworldtechnology@gmail.com</a>
+        <a href="/cdn-cgi/l/email-protection#cbb8bbaab9a0a7a2a5aebca4b9a7afbfaea8a3a5a4a7a4acb28baca6aaa2a7e5a8a4a6" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25);border-radius:9px;color:var(--sky);font-size:13px;font-weight:600;text-decoration:none;">✉️ <span class="__cf_email__" data-cfemail="36454657445d5a5f58534159445a524253555e58595a59514f76515b575f5a1855595b">[email&#160;protected]</span></a>
       </div>
     </div>
   </div>
@@ -588,7 +590,7 @@ select.fld option{background:#0d2035;}
     <div class="footer-col">
       <h4>Contact Us</h4>
       <a href="https://wa.me/917972425585" target="_blank">📱 WhatsApp: 7972425585</a>
-      <a href="mailto:sparklineworldtechnology@gmail.com">✉️ Email Us</a>
+      <a href="/cdn-cgi/l/email-protection#394a49584b525550575c4e564b555d4d5c5a51575655565e40795e54585055175a5654">✉️ Email Us</a>
       <a href="#faq">FAQ</a>
       <a href="#">Privacy Policy</a>
       <a href="#">Terms of Service</a>
@@ -596,7 +598,7 @@ select.fld option{background:#0d2035;}
   </div>
   <div class="footer-bottom">
     <span>© 2026 MediCore by Sparkline · Sparkline World Technology, Pune</span>
-    <span>🇮🇳 Pune, Maharashtra · sparklineworldtechnology@gmail.com</span>
+    <span>🇮🇳 Pune, Maharashtra · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="67141706150c0b0e09021008150b031302040f09080b08001e27000a060e0b4904080a">[email&#160;protected]</a></span>
   </div>
 </footer>
 
@@ -636,13 +638,16 @@ select.fld option{background:#0d2035;}
     <div id="signup-success" style="display:none" class="success-box">
       <div class="success-ico">🎉</div>
       <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">Account Created!</div>
-      <p style="color:var(--t2);font-size:13px;margin-bottom:20px">Your 14-day free trial has started. Go to your hospital dashboard now!</p>
-      <a href="index.html" class="btn-sky" style="display:inline-block;padding:12px 32px;font-size:14px;border-radius:10px;text-decoration:none">Go to Dashboard →</a>
+      <p id="success-msg" style="color:var(--t2);font-size:13px;margin-bottom:20px">Your 14-day free trial has started. Go to your hospital dashboard now!</p>
+      <div id="success-pay-btn" style="display:none;margin-bottom:14px">
+        <button onclick="proceedToPayment()" class="btn-sky" style="width:100%;padding:12px;font-size:14px;border-radius:10px;border:none;cursor:pointer">💳 Pay Now & Activate Plan</button>
+      </div>
+      <a href="index.html" class="btn-sky" id="goto-dash-btn" style="display:inline-block;padding:12px 32px;font-size:14px;border-radius:10px;text-decoration:none">Go to Dashboard →</a>
     </div>
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 var API = 'https://web-production-d347.up.railway.app/api';
 var isYearly = false;
 
@@ -699,6 +704,20 @@ function doSignup(){
     try{localStorage.setItem('mc_sess',JSON.stringify({u:Object.assign(res.user,{token:res.token}),h:res.hospital}));}catch(x){}
     document.getElementById('signup-form-wrap').style.display='none';
     document.getElementById('signup-success').style.display='block';
+    // Store hospital info for payment
+    _pendingPayHospital = {
+      id: res.hospital && res.hospital.id,
+      name: hosp,
+      email: email,
+      phone: ph,
+      plan: plan
+    };
+    // Show pay button for paid plans
+    if (plan !== 'trial' && plan !== 'custom') {
+      document.getElementById('success-msg').textContent = 'Account created! Complete payment to activate your ' + plan + ' plan.';
+      document.getElementById('success-pay-btn').style.display = 'block';
+      document.getElementById('goto-dash-btn').textContent = 'Skip for now →';
+    }
   })
   .catch(function(e){err.textContent=e.message;err.style.display='block';})
   .finally(function(){btn.textContent='🚀 Create My Account & Start Trial';btn.disabled=false;});
@@ -712,20 +731,57 @@ function toggleFaq(btn){
   if(!isOpen){btn.classList.add('open');btn.querySelector('.arr').textContent='×';ans.classList.add('show');}
 }
 
+// ── CASHFREE PAYMENT ──
+var _pendingPayHospital = null;
+var _pendingPayPlan = null;
+
+function openPlanCheckout(plan) {
+  // Open signup modal with plan preselected
+  openSignup(plan);
+  // Flag that after signup, payment should be initiated
+  _pendingPayPlan = plan;
+}
+
+function proceedToPayment() {
+  if (!_pendingPayHospital) return;
+  var plan = _pendingPayHospital.plan || 'basic';
+  var cycle = isYearly ? 'yearly' : 'monthly';
+  var amount = prices[plan] ? prices[plan][cycle] : 999;
+
+  var payBtn = document.querySelector('#success-pay-btn button');
+  if (payBtn) { payBtn.textContent = '⏳ Creating order...'; payBtn.disabled = true; }
+
+  fetch(API + '/payments/create-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      hospitalId: _pendingPayHospital.id,
+      hospitalName: _pendingPayHospital.name,
+      email: _pendingPayHospital.email,
+      phone: _pendingPayHospital.phone || '9999999999',
+      plan: plan,
+      amount: amount,
+      billingCycle: cycle
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data.paymentSessionId) throw new Error(data.error || 'Order failed');
+    // Open Cashfree checkout
+    var cashfree = Cashfree({ mode: 'sandbox' }); // Change to 'production' when live
+    cashfree.checkout({
+      paymentSessionId: data.paymentSessionId,
+      redirectTarget: '_self'
+    });
+  })
+  .catch(function(e) {
+    alert('Payment error: ' + e.message);
+    if (payBtn) { payBtn.textContent = '💳 Pay Now & Activate Plan'; payBtn.disabled = false; }
+  });
+}
+
 // Close modal on backdrop click
 document.getElementById('signup-modal').addEventListener('click',function(e){if(e.target===this)closeSignup();});
 
 // Scroll reveal
-var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.12});
-document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
-
-// Animate counter
-function animateNum(el,end){
-  var start=0,dur=1500,st=null;
-  function step(ts){if(!st)st=ts;var p=Math.min((ts-st)/dur,1);el.textContent=Math.floor(p*end)+(end>=100?'+':'%');if(p<1)requestAnimationFrame(step);}
-  requestAnimationFrame(step);
-}
-</script>
-</body>
-</html>
-
+var obs=new IntersectionObserver(function(entries){entries.
