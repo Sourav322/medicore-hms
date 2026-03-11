@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payment Status — MediCore</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:#0a0f1e;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:40px 32px;max-width:420px;width:100%;text-align:center;}
+  .ico{font-size:64px;margin-bottom:20px;}
+  .title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:10px;}
+  .sub{color:rgba(255,255,255,.6);font-size:14px;margin-bottom:28px;line-height:1.6;}
+  .btn{display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#0ea5e9,#06b6d4);color:#fff;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;border:none;cursor:pointer;width:100%;}
+  .detail-row{display:flex;justify-content:space-between;background:rgba(255,255,255,.05);border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:13px;}
+  .detail-row span:first-child{color:rgba(255,255,255,.5);}
+  .detail-row span:last-child{font-weight:600;}
+  .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.1);border-top-color:#0ea5e9;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .green{color:#10b981;}
+  .red{color:#ef4444;}
+</style>
+</head>
+<body>
+<div class="card" id="status-card">
+  <div class="spinner"></div>
+  <div class="title">Verifying Payment...</div>
+  <div class="sub">Please wait while we confirm your payment.</div>
+</div>
+
+<script>
+var API = 'https://web-production-d347.up.railway.app/api';
+
+function getParam(name) {
+  var url = new URLSearchParams(window.location.search);
+  return url.get(name);
+}
+
+function showSuccess(data) {
+  document.getElementById('status-card').innerHTML =
+    '<div class="ico">🎉</div>' +
+    '<div class="title" style="color:#10b981">Payment Successful!</div>' +
+    '<div class="sub">Your MediCore plan is now active. Login to your dashboard.</div>' +
+    '<div style="margin-bottom:20px">' +
+      '<div class="detail-row"><span>Plan</span><span class="green">' + (data.plan || '-') + '</span></div>' +
+      '<div class="detail-row"><span>Amount Paid</span><span>₹' + (data.amount || '-') + '</span></div>' +
+      '<div class="detail-row"><span>Status</span><span class="green">✅ Active</span></div>' +
+    '</div>' +
+    '<a href="/index.html" class="btn">Go to Dashboard →</a>';
+}
+
+function showFailed(msg) {
+  document.getElementById('status-card').innerHTML =
+    '<div class="ico">❌</div>' +
+    '<div class="title" style="color:#ef4444">Payment Failed</div>' +
+    '<div class="sub">' + (msg || 'Something went wrong. Please try again.') + '</div>' +
+    '<a href="/landing.html" class="btn" style="margin-bottom:10px;display:block">Try Again</a>' +
+    '<a href="/index.html" class="btn" style="background:rgba(255,255,255,.1)">Go to Dashboard</a>';
+}
+
+function showPending() {
+  document.getElementById('status-card').innerHTML =
+    '<div class="ico">⏳</div>' +
+    '<div class="title" style="color:#f59e0b">Payment Pending</div>' +
+    '<div class="sub">Your payment is being processed. We will update your account shortly.</div>' +
+    '<a href="/index.html" class="btn">Go to Dashboard</a>';
+}
+
+// Verify payment on page load
+var orderId = getParam('order_id');
+if (!orderId) {
+  showFailed('No order ID found.');
+} else {
+  fetch(API + '/payments/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId: orderId })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.isPaid || data.status === 'PAID') {
+      showSuccess(data);
+      // Update local session
+      try {
+        var sess = JSON.parse(localStorage.getItem('mc_sess') || 'null');
+        if (sess && sess.h) {
+          sess.h.subscriptionStatus = 'active';
+          sess.h.plan = data.plan;
+          localStorage.setItem('mc_sess', JSON.stringify(sess));
+        }
+      } catch(x) {}
+    } else if (data.status === 'ACTIVE' || data.status === 'PENDING') {
+      showPending();
+    } else {
+      showFailed('Payment was not completed. Status: ' + data.status);
+    }
+  })
+  .catch(function(e) {
+    showFailed(e.message);
+  });
+}
+</script>
+</body>
+</html>
+
