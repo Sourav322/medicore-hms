@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MediCore by Sparkline — Hospital Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --ink:#04101e;--ink2:#0d2035;--ink3:#1a3a5c;
+  --sky:#0ea5e9;--sky2:#38bdf8;--teal:#06b6d4;
+  --green:#10b981;--amber:#f59e0b;--red:#ef4444;
+  --glass:rgba(255,255,255,.04);--glass2:rgba(255,255,255,.08);
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
+  --text:#e8f4ff;--t2:#7fa8c9;--t3:#3d6180;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--text);overflow-x:hidden;}
+h1,h2,h3,.num{font-family:'Syne',sans-serif;}
+
+/* ── NOISE TEXTURE ── */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 5%;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);border-bottom:1px solid var(--border);background:rgba(4,16,30,.7);}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-ico{width:36px;height:36px;background:linear-gradient(135deg,var(--sky),var(--teal));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.nav-brand{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.3px;}
+.nav-links{display:flex;align-items:center;gap:28px;}
+.nav-links a{color:var(--t2);font-size:13px;font-weight:500;text-decoration:none;transition:.2s;}
+.nav-links a:hover{color:var(--text);}
+.nav-cta{display:flex;gap:10px;align-items:center;}
+.btn-ghost{padding:7px 16px;border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;font-weight:500;text-decoration:none;transition:.2s;background:transparent;}
+.btn-ghost:hover{background:var(--glass2);border-color:var(--sky);}
+.btn-sky{padding:8px 20px;background:linear-gradient(135deg,var(--sky),var(--teal));border-radius:9px;color:#fff;font-size:13px;font-weight:700;text-decoration:none;transition:.2s;border:none;cursor:pointer;}
+.btn-sky:hover{filter:brightness(1.12);transform:translateY(-1px);}
+
+/* ── HERO ── */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;padding:100px 5% 60px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;z-index:0;}
+.hero-orb{position:absolute;border-radius:50%;filter:blur(80px);animation:float 8s ease-in-out infinite;}
+.orb1{width:600px;height:600px;background:radial-gradient(circle,rgba(14,165,233,.18),transparent 70%);top:-100px;left:-100px;}
+.orb2{width:500px;height:500px;background:radial-gradient(circle,rgba(6,182,212,.12),transparent 70%);bottom:-80px;right:-80px;animation-delay:-4s;}
+.orb3{width:300px;height:300px;background:radial-gradient(circle,rgba(16,185,129,.08),transparent 70%);top:40%;left:60%;animation-delay:-2s;}
+@keyframes float{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-30px) scale(1.03);}}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(14,165,233,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(14,165,233,.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%);}
+.hero-content{position:relative;z-index:1;text-align:center;max-width:860px;margin:0 auto;}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--sky2);margin-bottom:24px;animation:fadeUp .6s ease both;}
+.hero-badge span{width:6px;height:6px;background:var(--sky);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
+.hero h1{font-size:clamp(40px,7vw,80px);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:20px;animation:fadeUp .7s .1s ease both;}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--sky),var(--teal),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:clamp(15px,2vw,19px);color:var(--t2);line-height:1.6;max-width:620px;margin:0 auto 36px;font-weight:300;animation:fadeUp .7s .2s ease both;}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:fadeUp .7s .3s ease both;}
+.btn-hero{padding:14px 32px;font-size:15px;font-weight:700;border-radius:12px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:.25s;}
+.btn-hero.primary{background:linear-gradient(135deg,var(--sky),var(--teal));color:#fff;}
+.btn-hero.primary:hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 12px 40px rgba(14,165,233,.35);}
+.btn-hero.secondary{background:var(--glass);border:1px solid var(--border2);color:var(--text);backdrop-filter:blur(10px);}
+.btn-hero.secondary:hover{background:var(--glass2);transform:translateY(-2px);}
+.hero-trial{margin-top:16px;font-size:12px;color:var(--t3);animation:fadeUp .7s .4s ease both;}
+.hero-trial strong{color:var(--green);}
+
+/* HERO STATS */
+.hero-stats{display:flex;gap:32px;justify-content:center;margin-top:56px;flex-wrap:wrap;animation:fadeUp .7s .5s ease both;}
+.hs{text-align:center;}
+.hs-num{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--sky),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hs-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.hs-div{width:1px;background:var(--border);align-self:stretch;}
+
+/* DASHBOARD PREVIEW */
+.hero-preview{position:relative;margin-top:64px;animation:fadeUp .8s .6s ease both;z-index:1;}
+.preview-frame{background:rgba(13,32,53,.8);border:1px solid var(--border2);border-radius:18px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.5),0 0 0 1px rgba(14,165,233,.1);backdrop-filter:blur(10px);}
+.preview-bar{background:rgba(4,16,30,.6);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.pb-dot{width:10px;height:10px;border-radius:50%;}
+.pb-dot:nth-child(1){background:#ef4444;}
+.pb-dot:nth-child(2){background:#f59e0b;}
+.pb-dot:nth-child(3){background:#10b981;}
+.pb-url{flex:1;text-align:center;background:rgba(255,255,255,.05);border-radius:5px;padding:3px 12px;font-size:10px;color:var(--t3);}
+.preview-content{padding:16px;display:grid;grid-template-columns:160px 1fr;gap:12px;min-height:260px;}
+.pc-sidebar{background:rgba(4,16,30,.6);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:4px;}
+.pc-logo{display:flex;align-items:center;gap:7px;padding:4px 6px;margin-bottom:8px;}
+.pc-logo-i{width:26px;height:26px;background:linear-gradient(135deg,var(--sky),var(--teal));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;}
+.pc-logo-t{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;}
+.pc-ni{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;font-size:10px;color:var(--t3);}
+.pc-ni.act{background:rgba(14,165,233,.15);color:var(--sky);}
+.pc-ni-i{font-size:11px;}
+.pc-main{display:flex;flex-direction:column;gap:10px;}
+.pc-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.pc-card{background:rgba(4,16,30,.5);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.pc-card-n{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--sky);}
+.pc-card-l{font-size:9px;color:var(--t3);margin-top:2px;}
+.pc-table{background:rgba(4,16,30,.5);border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:1;}
+.pc-thead{display:grid;grid-template-columns:1fr 1fr 1fr 60px;padding:6px 10px;background:rgba(14,165,233,.05);border-bottom:1px solid var(--border);}
+.pc-thead span{font-size:8px;color:var(--t3);text-transform:uppercase;}
+.pc-trow{display:grid;grid-template-columns:1fr 1fr 1fr 60px;padding:6px 10px;border-bottom:1px solid var(--border);font-size:9px;color:var(--t2);}
+.pc-badge{display:inline-flex;padding:1px 6px;border-radius:10px;font-size:8px;font-weight:700;}
+.pc-badge.g{background:rgba(16,185,129,.15);color:#34d399;}
+.pc-badge.b{background:rgba(14,165,233,.15);color:#38bdf8;}
+.pc-badge.o{background:rgba(245,158,11,.15);color:#fbbf24;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── SECTIONS ── */
+section{padding:80px 5%;}
+.sec-label{font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;}
+.sec-title{font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:16px;}
+.sec-sub{font-size:16px;color:var(--t2);line-height:1.6;max-width:560px;font-weight:300;}
+.sec-center{text-align:center;align-items:center;}
+.sec-center .sec-sub{margin:0 auto;}
+
+/* ── FEATURES ── */
+.features{background:var(--ink2);}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:48px;border-radius:18px;overflow:hidden;}
+.feat-card{background:rgba(13,32,53,.6);padding:28px;position:relative;overflow:hidden;transition:.3s;}
+.feat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--sky),var(--teal));opacity:0;transition:.3s;}
+.feat-card:hover::before{opacity:.04;}
+.feat-card:hover{transform:translateY(-2px);}
+.feat-ico{font-size:32px;margin-bottom:14px;position:relative;z-index:1;}
+.feat-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px;position:relative;z-index:1;}
+.feat-desc{font-size:13px;color:var(--t2);line-height:1.6;position:relative;z-index:1;}
+.feat-tag{display:inline-flex;margin-top:10px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:rgba(14,165,233,.12);color:var(--sky);position:relative;z-index:1;}
+
+/* ── PLANS ── */
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:48px;max-width:1100px;margin-left:auto;margin-right:auto;}
+.plan-card{background:rgba(13,32,53,.5);border:1px solid var(--border);border-radius:20px;padding:28px;position:relative;transition:.3s;overflow:hidden;}
+.plan-card::after{content:'';position:absolute;inset:0;border-radius:20px;border:1px solid transparent;transition:.3s;}
+.plan-card:hover{transform:translateY(-4px);}
+.plan-card.featured{border-color:rgba(14,165,233,.4);background:rgba(14,165,233,.06);}
+.plan-card.featured::after{border-color:rgba(14,165,233,.2);}
+.plan-badge{position:absolute;top:16px;right:16px;background:linear-gradient(135deg,var(--sky),var(--teal));color:#fff;font-size:10px;font-weight:800;padding:3px 10px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;}
+.plan-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.plan-price{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;letter-spacing:-1px;margin-bottom:4px;}
+.plan-price sup{font-size:20px;vertical-align:super;}
+.plan-price span{font-size:14px;font-weight:400;color:var(--t2);}
+.plan-sub{font-size:12px;color:var(--t3);margin-bottom:20px;}
+.plan-divider{height:1px;background:var(--border);margin:16px 0;}
+.plan-feat{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--t2);margin-bottom:9px;}
+.plan-feat .chk{color:var(--green);font-size:14px;flex-shrink:0;margin-top:1px;}
+.plan-feat .cross{color:var(--t3);font-size:14px;flex-shrink:0;margin-top:1px;}
+.plan-btn{display:block;text-align:center;padding:11px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;margin-top:20px;transition:.2s;cursor:pointer;border:none;width:100%;}
+.plan-btn.outline{border:1px solid var(--border2);color:var(--text);background:transparent;}
+.plan-btn.outline:hover{background:var(--glass2);}
+.plan-btn.solid{background:linear-gradient(135deg,var(--sky),var(--teal));color:#fff;}
+.plan-btn.solid:hover{filter:brightness(1.1);transform:translateY(-1px);}
+
+/* Toggle billing */
+.billing-toggle{display:flex;align-items:center;justify-content:center;gap:12px;margin:24px 0;font-size:13px;color:var(--t2);}
+.toggle-track{width:48px;height:26px;background:rgba(14,165,233,.2);border-radius:13px;cursor:pointer;position:relative;border:1px solid var(--border2);transition:.3s;}
+.toggle-track.on{background:linear-gradient(135deg,var(--sky),var(--teal));}
+.toggle-thumb{width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:3px;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.toggle-track.on .toggle-thumb{left:25px;}
+.save-badge{background:rgba(16,185,129,.15);color:#34d399;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
+
+/* ── HOW IT WORKS ── */
+.steps{counter-reset:step;}
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px;position:relative;}
+.steps-grid::before{content:'';position:absolute;top:30px;left:calc(12.5% + 24px);right:calc(12.5% + 24px);height:1px;background:linear-gradient(90deg,var(--sky),var(--teal),var(--green));z-index:0;}
+.step-card{text-align:center;position:relative;z-index:1;}
+.step-num{width:52px;height:52px;background:linear-gradient(135deg,var(--sky),var(--teal));border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin:0 auto 14px;box-shadow:0 0 0 8px rgba(14,165,233,.1);}
+.step-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:6px;}
+.step-desc{font-size:12px;color:var(--t2);line-height:1.5;}
+
+/* ── TESTIMONIALS ── */
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px;}
+.testi-card{background:rgba(13,32,53,.5);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.testi-stars{color:var(--amber);font-size:14px;margin-bottom:12px;}
+.testi-text{font-size:13px;color:var(--t2);line-height:1.7;font-style:italic;margin-bottom:16px;}
+.testi-author{display:flex;align-items:center;gap:10px;}
+.testi-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--teal));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;}
+.testi-name{font-size:13px;font-weight:600;}
+.testi-role{font-size:11px;color:var(--t3);}
+
+/* ── COMPARISON ── */
+.compare-wrap{overflow-x:auto;margin-top:40px;}
+.compare-table{width:100%;border-collapse:collapse;min-width:700px;}
+.compare-table th{padding:12px 16px;text-align:center;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t2);}
+.compare-table th:first-child{text-align:left;}
+.compare-table th.featured{color:var(--sky);}
+.compare-table td{padding:10px 16px;font-size:13px;border-top:1px solid var(--border);text-align:center;}
+.compare-table td:first-child{text-align:left;color:var(--t2);}
+.compare-table tr:hover td{background:rgba(14,165,233,.025);}
+.chk2{color:var(--green);}
+.crs2{color:var(--t3);}
+
+/* ── FAQ ── */
+.faq-list{max-width:720px;margin:40px auto 0;}
+.faq-item{border-bottom:1px solid var(--border);}
+.faq-q{width:100%;background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:18px 0;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;}
+.faq-q .arr{font-size:18px;color:var(--sky);transition:.3s;}
+.faq-q.open .arr{transform:rotate(45deg);}
+.faq-a{font-size:13px;color:var(--t2);line-height:1.7;padding-bottom:16px;display:none;}
+.faq-a.show{display:block;}
+
+/* ── CTA BANNER ── */
+.cta-banner{background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(6,182,212,.08));border:1px solid rgba(14,165,233,.2);border-radius:24px;padding:64px;text-align:center;position:relative;overflow:hidden;margin:0 5% 80px;}
+.cta-banner::before{content:'';position:absolute;inset:-50%;background:radial-gradient(ellipse at center,rgba(14,165,233,.08),transparent 60%);pointer-events:none;}
+.cta-banner h2{font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:-1px;margin-bottom:12px;}
+.cta-banner p{font-size:16px;color:var(--t2);margin-bottom:28px;}
+
+/* ── FOOTER ── */
+footer{background:var(--ink2);border-top:1px solid var(--border);padding:48px 5% 32px;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px;}
+.footer-brand .nav-logo{margin-bottom:12px;}
+.footer-brand p{font-size:13px;color:var(--t3);line-height:1.6;}
+.footer-col h4{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t2);margin-bottom:14px;}
+.footer-col a{display:block;color:var(--t3);font-size:13px;text-decoration:none;margin-bottom:8px;transition:.2s;}
+.footer-col a:hover{color:var(--text);}
+.footer-bottom{border-top:1px solid var(--border);padding-top:24px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t3);}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(8px);}
+.modal-bg.open{display:flex;}
+.modal-box{background:var(--ink2);border:1px solid var(--border2);border-radius:20px;width:100%;max-width:480px;padding:32px;position:relative;}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--t2);font-size:20px;cursor:pointer;}
+.modal-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--t2);margin-bottom:24px;}
+.fld{width:100%;background:rgba(4,16,30,.8);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 14px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:.2s;margin-bottom:11px;}
+.fld:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(14,165,233,.12);}
+.fld::placeholder{color:var(--t3);}
+select.fld option{background:#0d2035;}
+.lbl{display:block;font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 12px;color:#fca5a5;font-size:12px;margin-bottom:10px;display:none;}
+.success-box{text-align:center;padding:20px;}
+.success-ico{font-size:56px;margin-bottom:12px;}
+
+/* ── RESP ── */
+@media(max-width:900px){
+  .feat-grid{grid-template-columns:repeat(2,1fr);}
+  .steps-grid{grid-template-columns:repeat(2,1fr);}
+  .steps-grid::before{display:none;}
+  .testi-grid{grid-template-columns:1fr 1fr;}
+  .footer-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:640px){
+  nav{padding:12px 4%;}
+  .nav-links{display:none;}
+  .feat-grid{grid-template-columns:1fr;}
+  .steps-grid{grid-template-columns:1fr 1fr;}
+  .testi-grid{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr;}
+  .cta-banner{padding:36px 20px;}
+  .preview-content{grid-template-columns:1fr;min-height:auto;}
+  .pc-sidebar{display:none;}
+  .hero-stats{gap:20px;}
+  .fr2{grid-template-columns:1fr;}
+}
+
+/* Scroll reveal */
+.reveal{opacity:0;transform:translateY(30px);transition:.7s ease;}
+.reveal.visible{opacity:1;transform:none;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-ico">🏥</div>
+    <span class="nav-brand">MediCore by Sparkline</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#plans">Pricing</a>
+    <a href="#how">How it Works</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-cta">
+    <a href="index.html" class="btn-ghost">Login</a>
+    <button class="btn-sky" onclick="openSignup()">Start Free Trial</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-orb orb1"></div>
+    <div class="hero-orb orb2"></div>
+    <div class="hero-orb orb3"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge"><span></span> By Sparkline World Technology, Pune</div>
+    <h1>Run Your Hospital<br><em>Smarter, Faster,</em><br>More Profitably</h1>
+    <p class="hero-sub">Complete HMS with OPD, IPD, Lab, Billing, Discharge & 14+ modules. Apollo-style bills. Multi-staff login. Works on mobile.</p>
+    <div class="hero-btns">
+      <button class="btn-hero primary" onclick="openSignup()">🚀 Start 14-Day Free Trial</button>
+      <a href="#features" class="btn-hero secondary">✦ See All Features</a>
+    </div>
+    <p class="hero-trial"><strong>No credit card required</strong> · Free 14 days · Cancel anytime</p>
+    <div class="hero-stats">
+      <div class="hs"><div class="hs-num" id="cnt-hosp">500+</div><div class="hs-label">Hospitals</div></div>
+      <div class="hs-div"></div>
+      <div class="hs"><div class="hs-num">2L+</div><div class="hs-label">Patients Managed</div></div>
+      <div class="hs-div"></div>
+      <div class="hs"><div class="hs-num">₹50Cr+</div><div class="hs-label">Bills Generated</div></div>
+      <div class="hs-div"></div>
+      <div class="hs"><div class="hs-num">99.9%</div><div class="hs-label">Uptime</div></div>
+    </div>
+
+    <!-- Dashboard Preview -->
+    <div class="hero-preview">
+      <div class="preview-frame">
+        <div class="preview-bar">
+          <div class="pb-dot"></div><div class="pb-dot"></div><div class="pb-dot"></div>
+          <div class="pb-url">medicore.app/dashboard</div>
+        </div>
+        <div class="preview-content">
+          <div class="pc-sidebar">
+            <div class="pc-logo"><div class="pc-logo-i">🏥</div><div class="pc-logo-t">MediCore</div></div>
+            <div class="pc-ni act"><span class="pc-ni-i">📊</span> Dashboard</div>
+            <div class="pc-ni"><span class="pc-ni-i">👥</span> Patients</div>
+            <div class="pc-ni"><span class="pc-ni-i">🏃</span> OPD</div>
+            <div class="pc-ni"><span class="pc-ni-i">🛏️</span> IPD</div>
+            <div class="pc-ni"><span class="pc-ni-i">🧪</span> Lab</div>
+            <div class="pc-ni"><span class="pc-ni-i">💰</span> Billing</div>
+            <div class="pc-ni"><span class="pc-ni-i">📋</span> Discharge</div>
+            <div class="pc-ni"><span class="pc-ni-i">📈</span> Reports</div>
+          </div>
+          <div class="pc-main">
+            <div class="pc-row">
+              <div class="pc-card"><div class="pc-card-n">248</div><div class="pc-card-l">Total Patients</div></div>
+              <div class="pc-card"><div class="pc-card-n" style="color:#10b981">32</div><div class="pc-card-l">OPD Today</div></div>
+              <div class="pc-card"><div class="pc-card-n" style="color:#f59e0b">14</div><div class="pc-card-l">IPD Admitted</div></div>
+              <div class="pc-card"><div class="pc-card-n" style="color:#8b5cf6">₹84K</div><div class="pc-card-l">Today Revenue</div></div>
+            </div>
+            <div class="pc-table">
+              <div class="pc-thead"><span>Patient</span><span>Doctor</span><span>Time</span><span>Status</span></div>
+              <div class="pc-trow"><span>Rahul S.</span><span>Dr. Sharma</span><span>10:30</span><span><span class="pc-badge g">Done</span></span></div>
+              <div class="pc-trow"><span>Priya K.</span><span>Dr. Mehta</span><span>11:00</span><span><span class="pc-badge b">Waiting</span></span></div>
+              <div class="pc-trow"><span>Amit R.</span><span>Dr. Singh</span><span>11:30</span><span><span class="pc-badge o">In OPD</span></span></div>
+              <div class="pc-trow"><span>Sunita P.</span><span>Dr. Gupta</span><span>12:00</span><span><span class="pc-badge b">Waiting</span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="sec-label reveal">Complete HMS Suite</div>
+  <div class="sec-title reveal">Everything Your Hospital<br>Needs, In One Place</div>
+  <div class="feat-grid reveal">
+    <div class="feat-card"><div class="feat-ico">👥</div><div class="feat-title">Patient Registration</div><div class="feat-desc">Auto UHID generation, patient history, emergency contacts. Quick search by name, phone, or UHID.</div><span class="feat-tag">Core</span></div>
+    <div class="feat-card"><div class="feat-ico">🏃</div><div class="feat-title">OPD Management</div><div class="feat-desc">Token system, follow-up visits, doctor consultation fees, itemized billing with Apollo-style print.</div><span class="feat-tag">Core</span></div>
+    <div class="feat-card"><div class="feat-ico">🛏️</div><div class="feat-title">IPD Admission</div><div class="feat-desc">Ward selection, bed allocation, ICU/General/Private rooms, admission deposit receipt, live bed status.</div><span class="feat-tag">Core</span></div>
+    <div class="feat-card"><div class="feat-ico">🧪</div><div class="feat-title">Laboratory</div><div class="feat-desc">Doctor-prescribed tests, Blood/X-Ray/CT/MRI/USG billing, test status tracking, lab report system.</div><span class="feat-tag">Clinical</span></div>
+    <div class="feat-card"><div class="feat-ico">⚕️</div><div class="feat-title">Procedures & OT</div><div class="feat-desc">Surgery charges, OT fees, anaesthesia, equipment, nursing charges — all itemized on one bill.</div><span class="feat-tag">Clinical</span></div>
+    <div class="feat-card"><div class="feat-ico">📋</div><div class="feat-title">Discharge Billing</div><div class="feat-desc">Auto-calculates room rent × days, lab tests, procedures, services. Deducts advance. Apollo-format bill.</div><span class="feat-tag">Billing</span></div>
+    <div class="feat-card"><div class="feat-ico">📦</div><div class="feat-title">Package Management</div><div class="feat-desc">Surgery packages, delivery packages, health checkup packages. Auto-apply package price to bill.</div><span class="feat-tag">Billing</span></div>
+    <div class="feat-card"><div class="feat-ico">🏦</div><div class="feat-title">Advance & Deposits</div><div class="feat-desc">Receive advance payments, print receipt, auto-deduct from final discharge bill, refund calculation.</div><span class="feat-tag">Billing</span></div>
+    <div class="feat-card"><div class="feat-ico">📈</div><div class="feat-title">Reports & Analytics</div><div class="feat-desc">Daily revenue, department-wise income, bed occupancy, OPD/IPD counts, doctor performance charts.</div><span class="feat-tag">Admin</span></div>
+    <div class="feat-card"><div class="feat-ico">🔐</div><div class="feat-title">Role-Based Staff Login</div><div class="feat-desc">Doctor, Receptionist, Lab Tech, Billing Staff, Nurse, Pharmacist — each with their own access.</div><span class="feat-tag">Admin</span></div>
+    <div class="feat-card"><div class="feat-ico">🖨️</div><div class="feat-title">Apollo-Style Bills</div><div class="feat-desc">Barcoded bills with hospital logo, UHID, itemized services, amount in words, GST — print or PDF.</div><span class="feat-tag">Print</span></div>
+    <div class="feat-card"><div class="feat-ico">📱</div><div class="feat-title">Mobile Friendly</div><div class="feat-desc">Works perfectly on mobile phones. Receptionists can register patients on their phone directly.</div><span class="feat-tag">Mobile</span></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="sec-center">
+    <div class="sec-label reveal">Simple Setup</div>
+    <div class="sec-title reveal">Up & Running in<br>Under 10 Minutes</div>
+  </div>
+  <div class="steps-grid reveal">
+    <div class="step-card"><div class="step-num">1</div><div class="step-title">Register Hospital</div><div class="step-desc">Fill hospital details, upload logo, create admin account — takes 2 minutes.</div></div>
+    <div class="step-card"><div class="step-num">2</div><div class="step-title">Add Doctors & Staff</div><div class="step-desc">Share Hospital Code with staff. They register with their role. You approve.</div></div>
+    <div class="step-card"><div class="step-num">3</div><div class="step-title">Start Registering Patients</div><div class="step-desc">Register first patient, auto UHID generated, OPD/IPD billing starts.</div></div>
+    <div class="step-card"><div class="step-num">4</div><div class="step-title">Grow Your Hospital</div><div class="step-desc">View reports, track revenue, manage beds, print bills — fully digital.</div></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="plans" style="background:var(--ink2);">
+  <div class="sec-center">
+    <div class="sec-label reveal">Pricing</div>
+    <div class="sec-title reveal">Plans That Grow With You</div>
+    <div class="sec-sub reveal">Start free. Upgrade when you need more. No hidden charges. Cancel anytime.</div>
+  </div>
+  <div class="billing-toggle reveal">
+    <span>Monthly</span>
+    <div class="toggle-track" id="billing-toggle" onclick="toggleBilling()"><div class="toggle-thumb"></div></div>
+    <span>Yearly <span class="save-badge">Save 30%</span></span>
+  </div>
+  <div class="plans-grid reveal">
+
+    <!-- FREE TRIAL -->
+    <div class="plan-card">
+      <div class="plan-name">Free Trial</div>
+      <div class="plan-price">₹0<span>/14 days</span></div>
+      <div class="plan-sub">No credit card needed</div>
+      <div class="plan-divider"></div>
+      <div class="plan-feat"><span class="chk">✓</span> All features unlocked</div>
+      <div class="plan-feat"><span class="chk">✓</span> Up to 50 patients</div>
+      <div class="plan-feat"><span class="chk">✓</span> 3 staff accounts</div>
+      <div class="plan-feat"><span class="chk">✓</span> Bill printing</div>
+      <div class="plan-feat"><span class="cross">✕</span> After trial: upgrade required</div>
+      <button class="plan-btn outline" onclick="openSignup()">Start Free Trial</button>
+    </div>
+
+    <!-- BASIC -->
+    <div class="plan-card">
+      <div class="plan-name">Basic</div>
+      <div class="plan-price" id="basic-price">₹999<span id="basic-per">/month</span></div>
+      <div class="plan-sub">Per hospital, billed monthly</div>
+      <div class="plan-divider"></div>
+      <div class="plan-feat"><span class="chk">✓</span> All core HMS modules</div>
+      <div class="plan-feat"><span class="chk">✓</span> Up to 500 patients/month</div>
+      <div class="plan-feat"><span class="chk">✓</span> 5 staff accounts</div>
+      <div class="plan-feat"><span class="chk">✓</span> OPD + IPD + Lab billing</div>
+      <div class="plan-feat"><span class="chk">✓</span> Bill print + PDF</div>
+      <div class="plan-feat"><span class="cross">✕</span> Reports & Analytics</div>
+      <button class="plan-btn outline" onclick="openSignup('basic')">Get Started</button>
+    </div>
+
+    <!-- PRO (FEATURED) -->
+    <div class="plan-card featured">
+      <div class="plan-badge">Most Popular</div>
+      <div class="plan-name">Professional</div>
+      <div class="plan-price" id="pro-price">₹2,499<span id="pro-per">/month</span></div>
+      <div class="plan-sub">Per hospital, everything included</div>
+      <div class="plan-divider"></div>
+      <div class="plan-feat"><span class="chk">✓</span> Everything in Basic</div>
+      <div class="plan-feat"><span class="chk">✓</span> Unlimited patients</div>
+      <div class="plan-feat"><span class="chk">✓</span> 20 staff accounts</div>
+      <div class="plan-feat"><span class="chk">✓</span> Packages & Deposits</div>
+      <div class="plan-feat"><span class="chk">✓</span> Reports & Analytics</div>
+      <div class="plan-feat"><span class="chk">✓</span> Discharge billing</div>
+      <div class="plan-feat"><span class="chk">✓</span> Priority support</div>
+      <button class="plan-btn solid" onclick="openSignup('pro')">Start Free Trial</button>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="plan-card">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price" id="ent-price">₹4,999<span id="ent-per">/month</span></div>
+      <div class="plan-sub">For hospital chains & groups</div>
+      <div class="plan-divider"></div>
+      <div class="plan-feat"><span class="chk">✓</span> Everything in Pro</div>
+      <div class="plan-feat"><span class="chk">✓</span> Multiple branches</div>
+      <div class="plan-feat"><span class="chk">✓</span> Unlimited staff</div>
+      <div class="plan-feat"><span class="chk">✓</span> Custom branding</div>
+      <div class="plan-feat"><span class="chk">✓</span> Dedicated support</div>
+      <div class="plan-feat"><span class="chk">✓</span> Custom features</div>
+      <button class="plan-btn outline" onclick="openSignup('enterprise')">Contact Us</button>
+    </div>
+
+    <!-- CUSTOM -->
+    <div class="plan-card" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(14,165,233,.06),rgba(6,182,212,.04));border-color:rgba(14,165,233,.2);">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <div class="plan-name">Custom / Unlimited</div>
+          <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin:4px 0">Build Your Own Plan</div>
+          <div style="font-size:13px;color:var(--t2)">Need specific features? Multiple hospitals? Special pricing? Let's talk.</div>
+        </div>
+        <button class="btn-sky" style="font-size:14px;padding:12px 28px" onclick="openSignup('custom')">📞 Talk to Us</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section>
+  <div class="sec-center">
+    <div class="sec-label reveal">Compare Plans</div>
+    <div class="sec-title reveal">Feature Comparison</div>
+  </div>
+  <div class="compare-wrap reveal">
+    <table class="compare-table">
+      <thead><tr>
+        <th>Feature</th>
+        <th>Free Trial</th>
+        <th>Basic</th>
+        <th class="featured">Professional</th>
+        <th>Enterprise</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>Patient Registration + UHID</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+        <tr><td>OPD Billing + Token System</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+        <tr><td>IPD Admission + Bed Mgmt</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+        <tr><td>Lab Billing</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+        <tr><td>Apollo-Style Bill Print</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+        <tr><td>Staff Login (Roles)</td><td>3 accounts</td><td>5 accounts</td><td class="featured">20 accounts</td><td>Unlimited</td></tr>
+        <tr><td>Patients per month</td><td>50</td><td>500</td><td class="featured" style="color:var(--sky)">Unlimited</td><td style="color:var(--sky)">Unlimited</td></tr>
+        <tr><td>Packages & Deposits</td><td class="chk2">✓</td><td class="crs2">✕</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+        <tr><td>Discharge Billing Auto-calc</td><td class="chk2">✓</td><td class="crs2">✕</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+        <tr><td>Reports & Analytics</td><td class="chk2">✓</td><td class="crs2">✕</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+        <tr><td>Procedure / OT Billing</td><td class="chk2">✓</td><td class="crs2">✕</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+        <tr><td>Multiple Branches</td><td class="crs2">✕</td><td class="crs2">✕</td><td class="crs2">✕</td><td class="chk2">✓</td></tr>
+        <tr><td>Custom Branding</td><td class="crs2">✕</td><td class="crs2">✕</td><td class="crs2">✕</td><td class="chk2">✓</td></tr>
+        <tr><td>Priority Support</td><td class="crs2">✕</td><td class="crs2">✕</td><td class="chk2">✓</td><td class="chk2">✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section style="background:var(--ink2);">
+  <div class="sec-center">
+    <div class="sec-label reveal">Hospitals Love It</div>
+    <div class="sec-title reveal">Real Reviews from<br>Real Hospitals</div>
+  </div>
+  <div class="testi-grid reveal">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"Billing jo pehle 20 minute leta tha, ab 2 minute mein ho jaata hai. Apollo jaisa bill print hota hai — patients bahut impress hote hain!"</div>
+      <div class="testi-author"><div class="testi-av">R</div><div><div class="testi-name">Dr. Rajesh Sharma</div><div class="testi-role">City General Hospital, Pune</div></div></div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"Staff ka alag login system bahut helpful hai. Lab technician sirf lab dekhta hai, receptionist sirf OPD. Koi confusion nahi, koi data leak nahi."</div>
+      <div class="testi-author"><div class="testi-av">S</div><div><div class="testi-name">Dr. Sunita Verma</div><div class="testi-role">Verma Nursing Home, Nagpur</div></div></div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"Mobile pe kaam karta hai — phone se patient register karo, bill print karo. Hamara pura staff mobile se use karta hai. Setup 10 minute mein ho gaya."</div>
+      <div class="testi-author"><div class="testi-av">A</div><div><div class="testi-name">Dr. Amit Kulkarni</div><div class="testi-role">Kulkarni Hospital, Nashik</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOUNDER -->
+<section style="background:var(--ink2);padding:60px 5%;">
+  <div style="max-width:800px;margin:0 auto;display:flex;align-items:center;gap:40px;flex-wrap:wrap;">
+    <div style="width:110px;height:110px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--teal));display:flex;align-items:center;justify-content:center;font-size:48px;flex-shrink:0;">👨‍💻</div>
+    <div style="flex:1;min-width:260px;">
+      <div style="font-size:11px;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;">Meet the Founder</div>
+      <h2 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px;">Sourav Sarkar</h2>
+      <div style="font-size:14px;color:var(--sky);font-weight:600;margin-bottom:12px;">Founder & Developer · Sparkline World Technology</div>
+      <p style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:16px;">Pune, Maharashtra se hoon. MediCore banaya Indian hospitals ke liye — simple, fast aur affordable. Koi bhi hospital 10 minute mein digital ho sake, yahi mera sapna hai.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="https://wa.me/917972425585" target="_blank" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:9px;color:#34d399;font-size:13px;font-weight:600;text-decoration:none;">📱 WhatsApp: 7972425585</a>
+        <a href="mailto:sparklineworldtechnology@gmail.com" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(14,165,233,.1);border:1px solid rgba(14,165,233,.25);border-radius:9px;color:var(--sky);font-size:13px;font-weight:600;text-decoration:none;">✉️ sparklineworldtechnology@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="sec-center">
+    <div class="sec-label reveal">FAQ</div>
+    <div class="sec-title reveal">Common Questions</div>
+  </div>
+  <div class="faq-list reveal">
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Free trial mein credit card chahiye? <span class="arr">+</span></button><div class="faq-a">Bilkul nahi! 14-din ka free trial bina credit card ke shuru hota hai. Bas register karo aur shuru karo.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Ek se zyada hospital manage ho sakta hai? <span class="arr">+</span></button><div class="faq-a">Haan! Enterprise plan mein aap apni chain ke multiple hospitals manage kar sakte ho ek hi Super Admin account se.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Data secure hai? Cloud backup hota hai? <span class="arr">+</span></button><div class="faq-a">Haan! Data Firebase Firestore cloud database mein store hota hai. Google-grade security ke saath automatic backup hota hai.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Bill PDF mein save ho sakta hai? <span class="arr">+</span></button><div class="faq-a">Haan! Print option se "Save as PDF" choose karo — mobile pe bhi PDF ban jaata hai jo WhatsApp pe patient ko bhej sako.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Razorpay se payment kaise hogi? <span class="arr">+</span></button><div class="faq-a">Trial khatam hone ke baad, dashboard mein "Upgrade Plan" button aayega. Razorpay checkout se UPI/Card/Net Banking se payment ho jaayegi. Automatic subscription renew hota hai.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Custom plan kaise milega? <span class="arr">+</span></button><div class="faq-a">Neeche WhatsApp button se ya Contact form se hamse baat karo. Aapki hospital ke hisaab se special pricing aur features configure kar sakte hain.</div></div>
+    <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Staff kitne hote hain? <span class="arr">+</span></button><div class="faq-a">Basic mein 5, Professional mein 20, Enterprise mein unlimited staff accounts. Doctor, Receptionist, Lab Tech, Billing Staff, Nurse, Pharmacist — sabke alag login.</div></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-banner">
+  <h2>Ready to Modernize<br>Your Hospital?</h2>
+  <p>Join hospitals across India using MediCore by Sparkline. Start for free, no commitment.</p>
+  <button class="btn-hero primary" onclick="openSignup()" style="font-size:16px;padding:16px 40px">🚀 Start Free 14-Day Trial</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="nav-logo"><div class="nav-ico">🏥</div><span class="nav-brand">MediCore by Sparkline</span></div>
+      <p>India's modern hospital management system. Built by <strong>Sourav Sarkar</strong>, Pune. Hindi-friendly, mobile-first, Apollo-style bills.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <a href="#features">Features</a>
+      <a href="#plans">Pricing</a>
+      <a href="index.html">Login</a>
+      <a href="#" onclick="openSignup()">Free Trial</a>
+    </div>
+    <div class="footer-col">
+      <h4>Modules</h4>
+      <a href="#">OPD Billing</a>
+      <a href="#">IPD Admission</a>
+      <a href="#">Lab Management</a>
+      <a href="#">Discharge Billing</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact Us</h4>
+      <a href="https://wa.me/917972425585" target="_blank">📱 WhatsApp: 7972425585</a>
+      <a href="mailto:sparklineworldtechnology@gmail.com">✉️ Email Us</a>
+      <a href="#faq">FAQ</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 MediCore by Sparkline · Sparkline World Technology, Pune</span>
+    <span>🇮🇳 Pune, Maharashtra · sparklineworldtechnology@gmail.com</span>
+  </div>
+</footer>
+
+<!-- SIGNUP MODAL -->
+<div class="modal-bg" id="signup-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSignup()">✕</button>
+    <div id="signup-form-wrap">
+      <div class="modal-title">Start Free Trial 🏥</div>
+      <div class="modal-sub">14 days free • No credit card • All features unlocked</div>
+      <div id="signup-err" class="err"></div>
+      <div class="fr2">
+        <div><label class="lbl">Your Name *</label><input id="su-name" class="fld" placeholder="Dr. Your Name"></div>
+        <div><label class="lbl">Hospital Name *</label><input id="su-hosp" class="fld" placeholder="City Hospital"></div>
+      </div>
+      <label class="lbl">Hospital Address</label>
+      <input id="su-addr" class="fld" placeholder="City, State">
+      <div class="fr2">
+        <div><label class="lbl">Phone</label><input id="su-ph" class="fld" type="tel" placeholder="9876543210"></div>
+        <div><label class="lbl">Plan</label>
+          <select id="su-plan" class="fld">
+            <option value="trial">Free Trial (14 days)</option>
+            <option value="basic">Basic — ₹999/mo</option>
+            <option value="pro">Professional — ₹2,499/mo</option>
+            <option value="enterprise">Enterprise — ₹4,999/mo</option>
+            <option value="custom">Custom Plan</option>
+          </select>
+        </div>
+      </div>
+      <label class="lbl">Email *</label>
+      <input id="su-email" class="fld" type="email" placeholder="admin@hospital.com">
+      <label class="lbl">Password *</label>
+      <input id="su-pass" class="fld" type="password" placeholder="Min 6 characters">
+      <button class="btn-sky" style="width:100%;padding:12px;font-size:14px;margin-top:4px" id="su-btn" onclick="doSignup()">🚀 Create My Account & Start Trial</button>
+      <p style="font-size:11px;color:var(--t3);text-align:center;margin-top:10px">Already have an account? <a href="index.html" style="color:var(--sky)">Login →</a></p>
+    </div>
+    <div id="signup-success" style="display:none" class="success-box">
+      <div class="success-ico">🎉</div>
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">Account Created!</div>
+      <p style="color:var(--t2);font-size:13px;margin-bottom:20px">Your 14-day free trial has started. Go to your hospital dashboard now!</p>
+      <a href="index.html" class="btn-sky" style="display:inline-block;padding:12px 32px;font-size:14px;border-radius:10px;text-decoration:none">Go to Dashboard →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+var API = 'https://web-production-d347.up.railway.app/api';
+var isYearly = false;
+
+var prices = {
+  basic:   {monthly:999,  yearly:699},
+  pro:     {monthly:2499, yearly:1749},
+  enterprise:{monthly:4999,yearly:3499}
+};
+
+function toggleBilling(){
+  isYearly = !isYearly;
+  var t = document.getElementById('billing-toggle');
+  t.classList.toggle('on', isYearly);
+  var m = isYearly ? 'year' : 'month';
+  document.getElementById('basic-price').innerHTML = '₹'+prices.basic[isYearly?'yearly':'monthly'].toLocaleString('en-IN')+'<span id="basic-per">/'+m+'</span>';
+  document.getElementById('pro-price').innerHTML   = '₹'+prices.pro[isYearly?'yearly':'monthly'].toLocaleString('en-IN')+'<span id="pro-per">/'+m+'</span>';
+  document.getElementById('ent-price').innerHTML   = '₹'+prices.enterprise[isYearly?'yearly':'monthly'].toLocaleString('en-IN')+'<span id="ent-per">/'+m+'</span>';
+}
+
+function openSignup(plan){
+  document.getElementById('signup-modal').classList.add('open');
+  if(plan && document.getElementById('su-plan')){
+    var map={basic:'basic',pro:'pro',enterprise:'enterprise',custom:'custom'};
+    document.getElementById('su-plan').value = map[plan]||'trial';
+  }
+  setTimeout(function(){document.getElementById('su-name').focus();},100);
+}
+function closeSignup(){document.getElementById('signup-modal').classList.remove('open');}
+
+function doSignup(){
+  var name=(document.getElementById('su-name').value||'').trim();
+  var hosp=(document.getElementById('su-hosp').value||'').trim();
+  var addr=(document.getElementById('su-addr').value||'').trim();
+  var ph=(document.getElementById('su-ph').value||'').trim();
+  var plan=document.getElementById('su-plan').value;
+  var email=(document.getElementById('su-email').value||'').trim();
+  var pass=document.getElementById('su-pass').value||'';
+  var err=document.getElementById('signup-err');
+  err.style.display='none';
+  if(!name||!hosp||!email||!pass){err.textContent='Name, Hospital, Email & Password required';err.style.display='block';return;}
+  if(pass.length<6){err.textContent='Password min 6 characters';err.style.display='block';return;}
+  var btn=document.getElementById('su-btn');btn.textContent='Creating...';btn.disabled=true;
+
+  // Trial end date
+  var trialEnd=new Date();trialEnd.setDate(trialEnd.getDate()+14);
+
+  fetch(API+'/auth/register-hospital',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({adminName:name,hospitalName:hosp,address:addr,phone:ph,email:email,password:pass,plan:plan,trialEnd:trialEnd.toISOString(),subscriptionStatus:'trial'})
+  }).then(function(r){return r.ok?r.json():r.json().then(function(e){throw new Error(e.error||e.message||'Error');});})
+  .then(function(res){
+    // Save session
+    try{localStorage.setItem('mc_sess',JSON.stringify({u:Object.assign(res.user,{token:res.token}),h:res.hospital}));}catch(x){}
+    document.getElementById('signup-form-wrap').style.display='none';
+    document.getElementById('signup-success').style.display='block';
+  })
+  .catch(function(e){err.textContent=e.message;err.style.display='block';})
+  .finally(function(){btn.textContent='🚀 Create My Account & Start Trial';btn.disabled=false;});
+}
+
+function toggleFaq(btn){
+  var ans=btn.nextElementSibling;
+  var isOpen=btn.classList.contains('open');
+  document.querySelectorAll('.faq-q').forEach(function(b){b.classList.remove('open');b.querySelector('.arr').textContent='+';});
+  document.querySelectorAll('.faq-a').forEach(function(a){a.classList.remove('show');});
+  if(!isOpen){btn.classList.add('open');btn.querySelector('.arr').textContent='×';ans.classList.add('show');}
+}
+
+// Close modal on backdrop click
+document.getElementById('signup-modal').addEventListener('click',function(e){if(e.target===this)closeSignup();});
+
+// Scroll reveal
+var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(function(el){obs.observe(el);});
+
+// Animate counter
+function animateNum(el,end){
+  var start=0,dur=1500,st=null;
+  function step(ts){if(!st)st=ts;var p=Math.min((ts-st)/dur,1);el.textContent=Math.floor(p*end)+(end>=100?'+':'%');if(p<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+}
+</script>
+</body>
+</html>
+
