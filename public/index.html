@@ -288,6 +288,7 @@ tr:hover td{background:rgba(14,165,233,.025);}
   <div class="tab-row">
     <button class="tab-btn active" id="t-si" onclick="showTab('si')">Sign In</button>
     <button class="tab-btn" id="t-rg" onclick="showTab('rg')">Register Hospital</button>
+    <button class="tab-btn" id="t-sr" onclick="showTab('sr')">Staff Register</button>
   </div>
 
   <!-- SIGN IN -->
@@ -321,6 +322,40 @@ tr:hover td{background:rgba(14,165,233,.025);}
     <div class="fg"><label class="lbl">Email *</label><input id="rg-em" class="fld" type="email" placeholder="admin@hospital.com"></div>
     <div class="fg"><label class="lbl">Password *</label><input id="rg-pw" class="fld" type="password" placeholder="Min 6 characters"></div>
     <button class="btn-p" id="btn-rg">🏥 Register Hospital</button>
+  </div>
+
+  <!-- STAFF REGISTER -->
+  <div id="f-sr" style="display:none">
+    <div id="sr-er" class="err-box"></div>
+    <div style="background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);border-radius:9px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--t2)">
+      ℹ️ Staff register karne ke liye <strong>Hospital Code</strong> chahiye. Apne Hospital Admin se maango.
+    </div>
+    <div class="fg"><label class="lbl">Hospital Code *</label><input id="sr-hc" class="fld" placeholder="e.g. ABC123" style="text-transform:uppercase" maxlength="6"></div>
+    <div class="fr">
+      <div class="fg"><label class="lbl">Full Name *</label><input id="sr-nm" class="fld" placeholder="Your Name"></div>
+      <div class="fg"><label class="lbl">Role *</label>
+        <select id="sr-rl" class="fld">
+          <option value="">Select Role</option>
+          <option value="doctor">Doctor</option>
+          <option value="receptionist">Receptionist</option>
+          <option value="lab_technician">Lab Technician</option>
+          <option value="billing_staff">Billing Staff</option>
+          <option value="nurse">Nurse</option>
+          <option value="pharmacist">Pharmacist</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="lbl">Email *</label><input id="sr-em" class="fld" type="email" placeholder="your@email.com"></div>
+    <div class="fr">
+      <div class="fg"><label class="lbl">Password *</label><input id="sr-pw" class="fld" type="password" placeholder="Min 6 characters"></div>
+      <div class="fg"><label class="lbl">Phone</label><input id="sr-ph" class="fld" type="tel" placeholder="9876543210"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="lbl">Department</label><input id="sr-dp" class="fld" placeholder="e.g. Cardiology"></div>
+      <div class="fg"><label class="lbl">Qualification</label><input id="sr-ql" class="fld" placeholder="e.g. MBBS, B.Pharm"></div>
+    </div>
+    <button class="btn-p" id="btn-sr">📋 Submit Registration Request</button>
+    <p style="font-size:11px;color:var(--t2);text-align:center;margin-top:10px">Admin approval ke baad login kar paoge ✅</p>
   </div>
 </div>
 </div>
@@ -363,7 +398,9 @@ tr:hover td{background:rgba(14,165,233,.025);}
       <div class="nav-sec">Management</div>
       <button class="ni" onclick="nav('doctors')"><span class="ni-ico">👨‍⚕️</span>Doctors</button>
       <button class="ni" onclick="nav('staff')"><span class="ni-ico">👔</span>Staff</button>
+      <button class="ni" onclick="nav('staff_approve')" id="nav-approve"><span class="ni-ico">⏳</span>Pending Approvals <span id="pending-badge" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:9px;margin-left:4px">0</span></button>
       <button class="ni" onclick="nav('inventory')"><span class="ni-ico">📦</span>Inventory</button>
+      <button class="ni" onclick="nav('ratechart')"><span class="ni-ico">💰</span>Rate Chart</button>
       <button class="ni" onclick="nav('reports')"><span class="ni-ico">📈</span>Reports</button>
       <button class="ni" onclick="nav('settings')"><span class="ni-ico">⚙️</span>Settings</button>
     </div>
@@ -708,7 +745,7 @@ function calcBillTotal(wrapId,totalId){
 function addItemRow(wrapId,totalId){
   var wrap=ge(wrapId);if(!wrap)return;
   var row=document.createElement('div');row.className='bi-row';
-  row.innerHTML='<input class="fld item-desc" placeholder="Description" style="margin:0"><input class="fld item-qty" type="number" value="1" style="margin:0" oninput="calcBillTotal(\''+wrapId+'\',\''+totalId+'\')"><input class="fld item-amt" type="number" placeholder="Amount" style="margin:0" oninput="calcBillTotal(\''+wrapId+'\',\''+totalId+'\')"><button onclick="remItem(this,\''+wrapId+'\',\''+totalId+'\')" style="background:rgba(239,68,68,.2);border:none;color:#f87171;border-radius:5px;font-size:12px;">✕</button>';
+  row.innerHTML='<input class="fld item-desc" placeholder="Description" style="margin:0"><input class="fld item-qty" type="number" value="1" style="margin:0" oninput="calcBillTotal(\''+wrapId+'\',\''+totalId+'\')"><input class="fld item-amt" type="number" placeholder="Amount" style="margin:0" oninput="calcBillTotal(\''+wrapId+'\',\''+totalId+'\')"><button onclick="remItem(this,\\\''+wrapId+'\',\\\''+totalId+'\')" style="background:rgba(239,68,68,.2);border:none;color:#f87171;border-radius:5px;font-size:12px;">✕</button>';
   wrap.appendChild(row);
 }
 function remItem(btn,wrapId,totalId){
@@ -736,7 +773,7 @@ function ptSearch(inp,resId,hidId,inpId){
   }).slice(0,6);
   if(!pts.length){res.style.display='none';return;}
   res.innerHTML=pts.map(function(p){
-    return '<div class="sr-item" onclick="selectPt(\''+p.id+'\',\''+esc(p.name)+'\',\''+inpId+'\',\''+hidId+'\',\''+resId+'\')"><strong>'+esc(p.name)+'</strong> <span style="color:var(--t2);font-size:10px">'+esc(p.uhid||'')+'</span><br><span style="color:var(--t3);font-size:10px">'+esc(p.phone||'')+'</span></div>';
+    return '<div class="sr-item" onclick="selectPt(\\\''+p.id+'\',\\\''+esc(p.name)+'\',\\\''+inpId+'\',\\\''+hidId+'\',\\\''+resId+'\')"><strong>'+esc(p.name)+'</strong> <span style="color:var(--t2);font-size:10px">'+esc(p.uhid||'')+'</span><br><span style="color:var(--t3);font-size:10px">'+esc(p.phone||'')+'</span></div>';
   }).join('');
   res.style.display='block';
 }
@@ -752,7 +789,7 @@ function drSearch(inp,resId,hidId,inpId){
   var drs=(S.doctors||[]).filter(function(d){return (d.name||'').toLowerCase().includes(q.toLowerCase());}).slice(0,5);
   if(!drs.length){res.style.display='none';return;}
   res.innerHTML=drs.map(function(d){
-    return '<div class="sr-item" onclick="selectDr(\''+d.id+'\',\''+esc(d.name)+'\',\''+inpId+'\',\''+hidId+'\',\''+resId+'\')"><strong>'+esc(d.name)+'</strong><br><span style="color:var(--t2);font-size:10px">'+esc(d.specialization||'')+'</span></div>';
+    return '<div class="sr-item" onclick="selectDr(\\\''+d.id+'\',\\\''+esc(d.name)+'\',\\\''+inpId+'\',\\\''+hidId+'\',\\\''+resId+'\')"><strong>'+esc(d.name)+'</strong><br><span style="color:var(--t2);font-size:10px">'+esc(d.specialization||'')+'</span></div>';
   }).join('');
   res.style.display='block';
 }
@@ -768,11 +805,15 @@ document.addEventListener('click',function(e){
 });
 
 // ── AUTH ──
+function closeModal(id){var el=document.getElementById(id);if(el)el.style.display='none';}
+function openModal(id){var el=document.getElementById(id);if(el)el.style.display='flex';}
 function showTab(t){
   ge('f-si').style.display=t==='si'?'':'none';
   ge('f-rg').style.display=t==='rg'?'':'none';
+  ge('f-sr').style.display=t==='sr'?'':'none';
   ge('t-si').classList.toggle('active',t==='si');
   ge('t-rg').classList.toggle('active',t==='rg');
+  ge('t-sr').classList.toggle('active',t==='sr');
 }
 function doLogin(){
   var em=(ge('si-em').value||'').trim(),pw=ge('si-pw').value||'';
@@ -810,6 +851,39 @@ function doRegister(){
     .finally(function(){btn.textContent='🏥 Register Hospital';btn.disabled=false;});
 }
 function saveSess(){try{localStorage.setItem('mc_sess',JSON.stringify({u:S.user,h:S.hospital}));}catch(x){}}
+
+function doStaffRegister(){
+  var hc=(ge('sr-hc').value||'').trim().toUpperCase();
+  var nm=(ge('sr-nm').value||'').trim();
+  var rl=ge('sr-rl').value;
+  var em=(ge('sr-em').value||'').trim();
+  var pw=ge('sr-pw').value||'';
+  var ph=(ge('sr-ph').value||'').trim();
+  var dp=(ge('sr-dp').value||'').trim();
+  var ql=(ge('sr-ql').value||'').trim();
+  hideErr('sr-er');
+  if(!hc){showErr('sr-er','Hospital Code required');return;}
+  if(!nm){showErr('sr-er','Full name required');return;}
+  if(!rl){showErr('sr-er','Select your role');return;}
+  if(!em){showErr('sr-er','Email required');return;}
+  if(pw.length<6){showErr('sr-er','Password min 6 characters');return;}
+  var btn=ge('btn-sr');btn.textContent='⏳ Submitting...';btn.disabled=true;
+  api('POST','/auth/staff-register',{hospitalCode:hc,name:nm,role:rl,email:em,password:pw,phone:ph,department:dp,qualification:ql})
+    .then(function(res){
+      // Show success message
+      ge('f-sr').innerHTML=
+        '<div style="text-align:center;padding:20px">'+
+          '<div style="font-size:48px;margin-bottom:12px">✅</div>'+
+          '<h3 style="color:var(--green);margin-bottom:8px">Request Submitted!</h3>'+
+          '<p style="color:var(--t2);font-size:13px">'+res.message+'</p>'+
+          '<p style="color:var(--t3);font-size:11px;margin-top:10px">Admin approve karega tab login kar paoge.</p>'+
+          '<button class="btn-p" style="margin-top:16px" onclick="showTab(\'si\')">← Back to Login</button>'+
+        '</div>';
+      toast('Registration request submitted! ✅','s');
+    })
+    .catch(function(e){showErr('sr-er',e.message||'Registration failed');})
+    .finally(function(){if(btn){btn.textContent='📋 Submit Registration Request';btn.disabled=false;}});
+}
 function doLogout(){
   try{localStorage.removeItem('mc_sess');}catch(x){}
   S.user=null;S.hospital=null;
@@ -825,9 +899,39 @@ function launchApp(){
     if(logo){ge('sb-logo-img').src=logo;ge('sb-logo-img').style.display='block';ge('sb-logo-ico').style.display='none';}
   }
   ge('tb-date').textContent=today();
+  // Hide nav items based on role
+  applyRoleNav();
+  // Show pending badge for admin
+  if(S.user&&S.user.role==='hospital_admin') loadPendingCount();
   // Preload patients & doctors
   preload();
   nav('dashboard');
+}
+
+function applyRoleNav(){
+  var role=(S.user&&S.user.role)||'';
+  var allowed=ROLE_PERMS[role]||[];
+  if(role==='hospital_admin')return; // admin sees all
+  document.querySelectorAll('.ni').forEach(function(btn){
+    var oc=btn.getAttribute('onclick')||'';
+    var match=oc.match(/nav\('([^']+)'\)/);
+    if(match&&allowed.indexOf(match[1])===-1){
+      btn.style.display='none';
+    }
+  });
+  // Also hide nav section labels if all items in section hidden
+}
+
+function loadPendingCount(){
+  var h=hid();if(!h)return;
+  api('GET','/auth/pending-staff?hospitalId='+h)
+    .then(function(r){
+      var cnt=(r.staff||[]).length;
+      var badge=ge('pending-badge');
+      if(badge){badge.textContent=cnt;badge.style.display=cnt>0?'inline':'none';}
+      var navBtn=ge('nav-approve');
+      if(navBtn&&cnt>0)navBtn.style.color='#fbbf24';
+    }).catch(function(){});
 }
 function preload(){
   var h=hid();if(!h)return;
@@ -836,8 +940,15 @@ function preload(){
 }
 
 // ── NAV ──
-var TITLES={dashboard:'Dashboard',patients:'Patient Registration',search:'Global Search',opd:'OPD Management',ipd:'IPD Admission',beds:'Room & Bed Management',lab:'Laboratory',procedures:'Procedures & OT',billing:'Billing',discharge:'Discharge Billing',packages:'Packages',deposits:'Advance & Deposit',doctors:'Doctors',staff:'Staff',inventory:'Inventory',reports:'Reports',settings:'Settings'};
+var TITLES={dashboard:'Dashboard',staff_approve:'Pending Staff Approvals',patients:'Patient Registration',search:'Global Search',opd:'OPD Management',ipd:'IPD Admission',beds:'Room & Bed Management',lab:'Laboratory',procedures:'Procedures & OT',billing:'Billing',discharge:'Discharge Billing',packages:'Packages',deposits:'Advance & Deposit',doctors:'Doctors',staff:'Staff',inventory:'Inventory',ratechart:'Rate Chart',reports:'Reports',settings:'Settings'};
 function nav(page){
+  // Role-based access check
+  var role=(S.user&&S.user.role)||'';
+  var allowed=ROLE_PERMS[role]||[];
+  if(role&&role!=='hospital_admin'&&allowed.length&&allowed.indexOf(page)===-1){
+    ge('content').innerHTML='<div class="es"><div class="ei">🔒</div><p>Access denied for your role ('+ROLE_LABELS[role]+').</p><p style="font-size:11px;margin-top:6px;color:var(--t3)">Contact admin for access.</p></div>';
+    return;
+  }
   S.page=page;closeSB();
   document.querySelectorAll('.ni').forEach(function(el){
     el.classList.remove('active');
@@ -854,6 +965,22 @@ function closeSB(){ge('sb').classList.remove('open');ge('ov').classList.remove('
 // ══════════════════════════════════
 // PAGES
 // ══════════════════════════════════
+
+// ── ROLE PERMISSIONS ──
+var ROLE_PERMS = {
+  hospital_admin:  ['dashboard','patients','search','opd','ipd','beds','lab','procedures','billing','discharge','packages','deposits','doctors','staff','staff_approve','inventory','ratechart','reports','settings'],
+  doctor:          ['dashboard','patients','search','opd','ipd','beds','lab'],
+  receptionist:    ['dashboard','patients','search','opd','ipd','beds'],
+  lab_technician:  ['dashboard','patients','search','lab'],
+  billing_staff:   ['dashboard','patients','search','billing','discharge','deposits'],
+  nurse:           ['dashboard','patients','search','ipd','beds'],
+  pharmacist:      ['dashboard','patients','search','inventory']
+};
+var ROLE_LABELS = {
+  hospital_admin:'Hospital Admin', doctor:'Doctor', receptionist:'Receptionist',
+  lab_technician:'Lab Technician', billing_staff:'Billing Staff', nurse:'Nurse', pharmacist:'Pharmacist'
+};
+
 var PAGES={};
 
 // DASHBOARD
@@ -935,7 +1062,7 @@ function loadPts(q){
           '<td>'+esc(p.phone||'-')+'</td>'+
           '<td><span class="badge blue">'+(p.bloodGroup||'-')+'</span></td>'+
           '<td>'+fdate(p.createdAt)+'</td>'+
-          '<td><button class="bs pr" onclick="openM(\'m-opd\')">OPD</button> <button class="bs or" onclick="openM(\'m-ipd\')">IPD</button> <button class="bs re" onclick="delPt(\''+p.id+'\')">🗑️</button></td></tr>';
+          '<td><button class="bs pr" onclick="openM(\'m-opd\')">OPD</button> <button class="bs or" onclick="openM(\'m-ipd\')">IPD</button> <button class="bs re" onclick="delPt(\\\''+p.id+'\')">🗑️</button></td></tr>';
       });
       el.innerHTML=html+'</tbody></table>';
     }).catch(function(){var el=ge('pt-list');if(el)el.innerHTML='<div class="es"><div class="ei">❌</div><p>Failed to load</p></div>';});
@@ -977,7 +1104,7 @@ function doGlobalSearch(q){
     if(bills.length){
       html+='<div style="padding:10px 16px 6px;font-size:11px;font-weight:800;color:var(--t3);text-transform:uppercase;border-top:1px solid var(--border);margin-top:8px">Bills ('+bills.length+')</div>';
       html+='<table><thead><tr><th>Bill No</th><th>Patient</th><th>Type</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>';
-      bills.forEach(function(b){var st=b.status||'paid';html+='<tr><td><code style="color:var(--accent);font-size:10px">'+esc(b.billNumber||'-')+'</code></td><td>'+esc(b.patientName||'-')+'</td><td><span class="badge blue">'+esc(b.billType||b.type||'-')+'</span></td><td><strong>'+cur(b.totalAmount||b.amount||0)+'</strong></td><td><span class="badge '+(st==='paid'?'green':'orange')+'">'+st+'</span></td><td><button class="bs pr" onclick="printBillById(\''+b.id+'\')">🖨️</button></td></tr>';});
+      bills.forEach(function(b){var st=b.status||'paid';html+='<tr><td><code style="color:var(--accent);font-size:10px">'+esc(b.billNumber||'-')+'</code></td><td>'+esc(b.patientName||'-')+'</td><td><span class="badge blue">'+esc(b.billType||b.type||'-')+'</span></td><td><strong>'+cur(b.totalAmount||b.amount||0)+'</strong></td><td><span class="badge '+(st==='paid'?'green':'orange')+'">'+st+'</span></td><td><button class="bs pr" onclick="printBillById(\\\''+b.id+'\')">🖨️</button></td></tr>';});
       html+='</tbody></table>';
     }
     if(!pts.length&&!bills.length)html='<div class="es"><div class="ei">🔍</div><p>No results for "'+esc(q)+'"</p></div>';
@@ -1020,7 +1147,7 @@ function loadOPD(q){
           '<td><strong>'+cur(b.totalAmount||b.amount||0)+'</strong></td>'+
           '<td>'+esc(b.paymentMode||b.paymentMethod||'-')+'</td>'+
           '<td>'+fdate(b.createdAt)+'</td>'+
-          '<td><button class="bs pr" onclick="printBillById(\''+b.id+'\')">🖨️</button></td></tr>';
+          '<td><button class="bs pr" onclick="viewBillById(\\\''+b.id+'\')" title="View">👁️</button> <button class="bs gr" onclick="printBillById(\\\''+b.id+'\')" title="Print">🖨️</button></td></tr>';
       });
       el.innerHTML=html+'</tbody></table>';
     }).catch(function(){var el=ge('opd-list');if(el)el.innerHTML='<div class="es"><div class="ei">❌</div><p>Failed to load</p></div>';});
@@ -1061,9 +1188,9 @@ function loadIPD(){
           '<td>'+cur(d.deposit||0)+'</td>'+
           '<td><span class="badge '+bc+'">'+st+'</span></td>'+
           '<td>'+
-            (st!=='discharged'?'<button class="bs pr" onclick="openDischarge(\''+d.id+'\')">📋 Discharge</button> ':'')+
-            '<button class="bs gr" onclick="printAdmissionReceipt(\''+JSON.stringify(d).replace(/'/g,"&#39;").replace(/"/g,"&quot;")+'\')" style="display:none"></button>'+
-            '<button class="bs gr" onclick="printIPDReceipt(\''+d.id+'\')">🖨️</button>'+
+            (st!=='discharged'?'<button class="bs pr" onclick="openDischarge(\\\''+d.id+'\')">📋 Discharge</button> ':'')+
+            '<button class="bs gr" onclick="printAdmissionReceipt(\\\''+JSON.stringify(d).replace(/'/g,"&#39;").replace(/"/g,"&quot;")+'\')" style="display:none"></button>'+
+            '<button class="bs gr" onclick="printIPDReceipt(\\\''+d.id+'\')">🖨️</button>'+
           '</td></tr>';
       });
       el.innerHTML=html+'</tbody></table>';
@@ -1125,45 +1252,150 @@ function showWard(btn,ward){
 PAGES.lab=function(){
   ge('content').innerHTML='<div class="ph2"><span class="pt2">🧪 Laboratory</span><button class="btn-n" onclick="openM(\'m-lab\')">➕ Order Test</button></div>'+
     '<div class="sg sg-3">'+
-      '<div class="sc bl"><div class="sc-i">🧪</div><div class="sc-v" id="lab-t">-</div><div class="sc-l">Total Tests</div></div>'+
-      '<div class="sc or"><div class="sc-i">⏳</div><div class="sc-v" id="lab-pend">-</div><div class="sc-l">Pending</div></div>'+
-      '<div class="sc gr"><div class="sc-i">✅</div><div class="sc-v" id="lab-done">-</div><div class="sc-l">Completed</div></div>'+
+      '<div class="sc bl" onclick="loadLab(\'all\')" style="cursor:pointer"><div class="sc-i">🧪</div><div class="sc-v" id="lab-t">-</div><div class="sc-l">Total Tests</div></div>'+
+      '<div class="sc or" onclick="loadLab(\'pending\')" style="cursor:pointer"><div class="sc-i">⏳</div><div class="sc-v" id="lab-pend">-</div><div class="sc-l">Pending (Click)</div></div>'+
+      '<div class="sc gr" onclick="loadLab(\'completed\')" style="cursor:pointer"><div class="sc-i">✅</div><div class="sc-v" id="lab-done">-</div><div class="sc-l">Completed (Click)</div></div>'+
     '</div>'+
-    '<div class="tw"><div class="tw-h"><span class="tw-t">Lab Tests</span></div>'+
+    '<div class="tw"><div class="tw-h"><span class="tw-t">Lab Tests</span>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="ptab active" id="lab-tab-all" onclick="loadLab(\'all\',this)">All</button>'+
+        '<button class="ptab" id="lab-tab-pend" onclick="loadLab(\'pending\',this)">⏳ Pending</button>'+
+        '<button class="ptab" id="lab-tab-prog" onclick="loadLab(\'in-progress\',this)">🔬 In Progress</button>'+
+        '<button class="ptab" id="lab-tab-done" onclick="loadLab(\'completed\',this)">✅ Completed</button>'+
+        '<button class="ptab" id="lab-tab-today" onclick="loadLabToday(this)">📅 Today</button>'+
+      '</div>'+
+    '</div>'+
     '<div id="lab-list"><div class="ld"><div class="sp"></div></div></div></div>';
-  loadLab();
+  loadLab('all');
 };
-function loadLab(){
+function printLabReceipt2(id){
   var h=hid();if(!h)return;
-  api('GET','/laboratory?hospitalId='+h+'&limit=100')
+  api('GET','/laboratory?hospitalId='+h+'&limit=200').then(function(r){
+    var t=(r.tests||r.data||[]).find(function(x){return x.id===id;});
+    if(t)printLabReceipt(t);else toast('Test not found','e');
+  });
+}
+function receiveLabTest(id){
+  if(!confirm('Mark this test as Received / In Progress?'))return;
+  api('PUT','/laboratory/'+id,{hospitalId:hid(),status:'in-progress',receivedAt:new Date().toISOString()})
+    .then(function(){toast('Test marked as Received ✅','s');loadLab('all');}).catch(function(e){toast(e.message,'e');});
+}
+function viewLabReport(id){
+  // Show report entry modal
+  var h=hid();if(!h)return;
+  api('GET','/laboratory?hospitalId='+h+'&limit=200').then(function(r){
+    var t=(r.tests||r.data||[]).find(function(x){return x.id===id;});
+    if(!t){toast('Not found','e');return;}
+    var modal=ge('m-lab-report');
+    if(!modal){
+      var d=document.createElement('div');d.id='m-lab-report';
+      d.style.cssText='display:none;position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;';
+      d.innerHTML='<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:480px;padding:0;overflow:hidden;">'+
+        '<div style="background:linear-gradient(135deg,var(--sky),var(--teal));padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">'+
+          '<span style="font-family:Syne,sans-serif;font-weight:700;font-size:14px">📋 Lab Report</span>'+
+          '<button onclick="ge(\'m-lab-report\').style.display=\'none\'" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer">✕</button>'+
+        '</div>'+
+        '<div id="lab-rpt-body" style="padding:16px"></div>'+
+      '</div>';
+      document.body.appendChild(d);
+    }
+    ge('m-lab-report').style.display='flex';
+    ge('lab-rpt-body').innerHTML=
+      '<div style="background:var(--bg3);border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px">'+
+        '<strong>Patient:</strong> '+esc(t.patientName||'-')+'<br>'+
+        '<strong>Tests:</strong> '+esc(t.testNames||t.tests||'-')+'<br>'+
+        '<strong>Test ID:</strong> '+esc(t.testId||t.id.slice(0,8))+'<br>'+
+        '<strong>Amount:</strong> '+cur(t.amount||0)+
+      '</div>'+
+      '<label class="lbl">Report / Result Notes</label>'+
+      '<textarea id="lab-rpt-txt" class="fld" rows="4" placeholder="Enter test results here...">'+esc(t.reportText||'')+'</textarea>'+
+      '<label class="lbl">Reported By</label>'+
+      '<input id="lab-rpt-by" class="fld" placeholder="Lab Technician Name" value="'+esc(t.reportedBy||'')+'">'+
+      '<button onclick="saveLabReport(\\\''+id+'\')" style="width:100%;padding:10px;background:linear-gradient(135deg,var(--sky),var(--teal));border:none;border-radius:9px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">💾 Save & Print Report</button>';
+  });
+}
+function saveLabReport(id){
+  var txt=ge('lab-rpt-txt').value||'';
+  var by=ge('lab-rpt-by').value||'';
+  api('PUT','/laboratory/'+id,{hospitalId:hid(),reportText:txt,reportedBy:by,status:'completed',completedAt:new Date().toISOString()})
+    .then(function(){
+      ge('m-lab-report').style.display='none';
+      toast('Report saved ✅','s');
+      loadLab('all');
+    }).catch(function(e){toast(e.message,'e');});
+}
+function loadLabToday(btn){
+  if(btn){document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('active');});btn.classList.add('active');}
+  var h=hid();if(!h)return;var el=ge('lab-list');if(!el)return;
+  el.innerHTML='<div class="ld"><div class="sp"></div></div>';
+  var today=new Date().toISOString().split('T')[0];
+  api('GET','/laboratory?hospitalId='+h+'&limit=200').then(function(res){
+    var data=(res.tests||res.data||[]).filter(function(t){return (t.createdAt||'').startsWith(today);});
+    renderLabTable(data,el);
+  });
+}
+function loadLab(filter,btn){
+  if(btn){document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('active');});btn.classList.add('active');}
+  var h=hid();if(!h)return;
+  api('GET','/laboratory?hospitalId='+h+'&limit=200')
     .then(function(res){
       var data=res.tests||res.data||[];
-      var pend=data.filter(function(d){return d.status!=='completed';}).length;
+      var pend=data.filter(function(d){return d.status==='pending';}).length;
       var done=data.filter(function(d){return d.status==='completed';}).length;
       if(ge('lab-t'))ge('lab-t').textContent=data.length;
       if(ge('lab-pend'))ge('lab-pend').textContent=pend;
       if(ge('lab-done'))ge('lab-done').textContent=done;
+      if(filter&&filter!=='all') data=data.filter(function(d){return d.status===filter;});
       var el=ge('lab-list');if(!el)return;
       if(!data.length){el.innerHTML='<div class="es"><div class="ei">🧪</div><p>No lab tests</p></div>';return;}
-      var html='<table><thead><tr><th>Test ID</th><th>Patient</th><th>Tests</th><th>Doctor</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+      var html='<table><thead><tr><th>Test ID</th><th>Patient</th><th>Tests</th><th>Doctor</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>';
       data.forEach(function(t){
         var st=t.status||'pending';var bc=st==='completed'?'green':st==='in-progress'?'orange':'blue';
         html+='<tr><td><code style="color:var(--accent);font-size:10px">'+esc(t.testId||t.id.slice(0,8))+'</code></td>'+
-          '<td>'+esc(t.patientName||'-')+'</td>'+
-          '<td style="max-width:150px;font-size:11px">'+esc(t.testNames||t.tests||'-')+'</td>'+
+          '<td><strong>'+esc(t.patientName||'-')+'</strong><br><span style="font-size:10px;color:var(--t3)">'+esc(t.patientUHID||'-')+'</span></td>'+
+          '<td style="max-width:140px;font-size:11px">'+esc(t.testNames||t.tests||'-')+'</td>'+
           '<td>'+esc(t.doctorName||'-')+'</td>'+
-          '<td>'+cur(t.amount||0)+'</td>'+
+          '<td><strong>'+cur(t.amount||0)+'</strong></td>'+
           '<td><span class="badge '+bc+'">'+st+'</span></td>'+
-          '<td><button class="bs pr" onclick="printBillById(\''+t.id+'\')">🖨️</button> '+
-            (st!=='completed'?'<button class="bs gr" onclick="markLabDone(\''+t.id+'\')">✓ Done</button>':'')+
+          '<td style="font-size:11px">'+fdate(t.createdAt)+'</td>'+
+          '<td style="white-space:nowrap">'+
+            '<button class="bs pr" onclick="viewLabReceipt(\\\''+t.id+'\')" title="View Receipt">👁️</button> '+
+            '<button class="bs gr" onclick="printLabReceipt2(\\\''+t.id+'\')" title="Print">🖨️</button> '+
+            (st==='completed'?
+              '<button class="bs bl" onclick="viewLabReport(\\\''+t.id+'\')" title="Report">📋</button>':
+              '<button class="bs or" onclick="receiveLabTest(\\\''+t.id+'\')" title="Mark Received">📥 Receive</button>')+
           '</td></tr>';
       });
-      el.innerHTML=html+'</tbody></table>';
+      renderLabTable(data,el);
     }).catch(function(){var el=ge('lab-list');if(el)el.innerHTML='<div class="es"><div class="ei">❌</div><p>Failed to load</p></div>';});
 }
+function renderLabTable(data,el){
+  if(!el){el=ge('lab-list');}
+  if(!data||!data.length){el.innerHTML='<div class="es"><div class="ei">🧪</div><p>No tests found</p></div>';return;}
+  var html='<table><thead><tr><th>Test ID</th><th>Patient</th><th>Tests</th><th>Doctor</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody>';
+  data.forEach(function(t){
+    var st=t.status||'pending';var bc=st==='completed'?'green':st==='in-progress'?'orange':'blue';
+    html+='<tr><td><code style="color:var(--accent);font-size:10px">'+esc(t.testId||t.id.slice(0,8))+'</code></td>'+
+      '<td><strong>'+esc(t.patientName||'-')+'</strong><br><span style="font-size:10px;color:var(--t3)">'+esc(t.patientUHID||'-')+'</span></td>'+
+      '<td style="max-width:140px;font-size:11px">'+esc(t.testNames||t.tests||'-')+'</td>'+
+      '<td>'+esc(t.doctorName||'-')+'</td>'+
+      '<td><strong>'+cur(t.amount||0)+'</strong></td>'+
+      '<td><span class="badge '+bc+'">'+st+'</span></td>'+
+      '<td style="font-size:11px">'+fdate(t.createdAt)+'</td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="bs pr" onclick="viewLabReceipt(\\\''+t.id+'\')" title="View">👁️</button> '+
+        '<button class="bs gr" onclick="printLabReceipt2(\\\''+t.id+'\')" title="Print">🖨️</button> '+
+        (st==='completed'?
+          '<button class="bs bl" onclick="viewLabReport(\\\''+t.id+'\')" title="Report">📋 Report</button>':
+          '<button class="bs or" onclick="receiveLabTest(\\\''+t.id+'\')" title="Receive">📥</button> '+
+          '<button class="bs gr" onclick="markLabDone(\\\''+t.id+'\')" title="Complete">✓</button>')+
+      '</td></tr>';
+  });
+  el.innerHTML=html+'</tbody></table>';
+}
 function markLabDone(id){
-  api('PUT','/laboratory/'+id,{hospitalId:hid(),status:'completed'})
-    .then(function(){toast('Marked complete ✅','s');loadLab();}).catch(function(e){toast(e.message,'e');});
+  api('PUT','/laboratory/'+id,{hospitalId:hid(),status:'completed',completedAt:new Date().toISOString()})
+    .then(function(){toast('Marked complete ✅','s');loadLab('all');}).catch(function(e){toast(e.message,'e');});
 }
 
 // PROCEDURES
@@ -1181,7 +1413,7 @@ function loadProcs(){
       var el=ge('proc-list');if(!el)return;
       if(!bills.length){el.innerHTML='<div class="es"><div class="ei">⚕️</div><p>No procedure bills</p></div>';return;}
       var html='<table><thead><tr><th>Bill No</th><th>Patient</th><th>Procedure</th><th>Amount</th><th>Payment</th><th>Date</th><th>Action</th></tr></thead><tbody>';
-      bills.forEach(function(b){html+='<tr><td><code style="color:var(--accent);font-size:10px">'+esc(b.billNumber||'-')+'</code></td><td>'+esc(b.patientName||'-')+'</td><td><span class="badge purple">'+esc(b.billType||b.type||'-')+'</span></td><td><strong>'+cur(b.totalAmount||b.amount||0)+'</strong></td><td>'+esc(b.paymentMode||'-')+'</td><td>'+fdate(b.createdAt)+'</td><td><button class="bs pr" onclick="printBillById(\''+b.id+'\')">🖨️</button></td></tr>';});
+      bills.forEach(function(b){html+='<tr><td><code style="color:var(--accent);font-size:10px">'+esc(b.billNumber||'-')+'</code></td><td>'+esc(b.patientName||'-')+'</td><td><span class="badge purple">'+esc(b.billType||b.type||'-')+'</span></td><td><strong>'+cur(b.totalAmount||b.amount||0)+'</strong></td><td>'+esc(b.paymentMode||'-')+'</td><td>'+fdate(b.createdAt)+'</td><td style="white-space:nowrap"><button class="bs pr" onclick="viewBillById(\\\''+b.id+'\')" title="View">👁️</button> <button class="bs gr" onclick="printBillById(\\\''+b.id+'\')" title="Print">🖨️</button></td></tr>';});
       el.innerHTML=html+'</tbody></table>';
     }).catch(function(){});
 };
@@ -1233,7 +1465,7 @@ function loadBillsTab(btn,type,q){
           '<td>'+(b.discount?b.discount+'%':'–')+'</td>'+
           '<td>'+esc(b.paymentMode||b.paymentMethod||'-')+'</td>'+
           '<td>'+fdate(b.createdAt)+'</td>'+
-          '<td><button class="bs pr" onclick="printBillById(\''+b.id+'\')">🖨️ Print</button></td></tr>';
+          '<td style="white-space:nowrap"><button class="bs pr" onclick="viewBillById(\\\''+b.id+'\')" title="View">👁️</button> <button class="bs gr" onclick="printBillById(\\\''+b.id+'\')" title="Print">🖨️</button></td></tr>';
       });
       el.innerHTML=html+'</tbody></table>';
     }).catch(function(){var el=ge('bl-list');if(el)el.innerHTML='<div class="es"><div class="ei">❌</div><p>Failed</p></div>';});
@@ -1260,7 +1492,7 @@ PAGES.discharge=function(){
           '<td>'+fdate(d.admissionDate||d.createdAt)+'</td>'+
           '<td><strong style="color:var(--orange)">'+days+' days</strong></td>'+
           '<td>'+cur(d.deposit||0)+'</td>'+
-          '<td><button class="bs pr" onclick="openDischarge(\''+d.id+'\')">📋 Final Bill</button></td></tr>';
+          '<td><button class="bs pr" onclick="openDischarge(\\\''+d.id+'\')">📋 Final Bill</button></td></tr>';
       });
       el.innerHTML=html+'</tbody></table>';
     }).catch(function(){});
@@ -1313,7 +1545,7 @@ function openDischarge(admId){
         '<div class="fg"><label class="lbl">Discount (%)</label><input id="dis-dc" class="fld" type="number" value="0" placeholder="0"></div>'+
         '<div class="fg"><label class="lbl">Final Payment Mode</label><select id="dis-pm" class="fld"><option>Cash</option><option>UPI</option><option>Card</option><option>Insurance</option></select></div>'+
       '</div>'+
-      '<button class="ba" onclick="createDischarge(\''+admId+'\','+subtotal+','+deposit+',\''+esc(adm.patientName||'')+'\',\''+ward+'\','+days+','+roomRate+','+labAmt+','+procAmt+','+othAmt+')">📋 Generate Final Bill & Discharge</button>';
+      '<button class="ba" onclick="createDischarge(\\\''+admId+'\','+subtotal+','+deposit+',\\\''+esc(adm.patientName||'')+'\',\\\''+ward+'\','+days+','+roomRate+','+labAmt+','+procAmt+','+othAmt+')">📋 Generate Final Bill & Discharge</button>';
   }).catch(function(err){var db=ge('dis-body');if(db)db.innerHTML='<div class="es"><div class="ei">❌</div><p>'+esc(err.message)+'</p></div>';});
 }
 
@@ -1387,7 +1619,7 @@ function loadDeposits(){
       var el=ge('dep-list');if(!el)return;
       if(!deps.length){el.innerHTML='<div class="es"><div class="ei">🏦</div><p>No deposits yet</p></div>';return;}
       var html='<table><thead><tr><th>Receipt No</th><th>Patient</th><th>Amount</th><th>Purpose</th><th>Payment</th><th>Date</th><th>Action</th></tr></thead><tbody>';
-      deps.forEach(function(d){html+='<tr><td><code style="color:var(--accent);font-size:10px">'+esc(d.billNumber||'-')+'</code></td><td>'+esc(d.patientName||'-')+'</td><td><strong>'+cur(d.totalAmount||d.amount||0)+'</strong></td><td>'+esc(d.notes||'-')+'</td><td>'+esc(d.paymentMode||'-')+'</td><td>'+fdate(d.createdAt)+'</td><td><button class="bs pr" onclick="printBillById(\''+d.id+'\')">🖨️</button></td></tr>';});
+      deps.forEach(function(d){html+='<tr><td><code style="color:var(--accent);font-size:10px">'+esc(d.billNumber||'-')+'</code></td><td>'+esc(d.patientName||'-')+'</td><td><strong>'+cur(d.totalAmount||d.amount||0)+'</strong></td><td>'+esc(d.notes||'-')+'</td><td>'+esc(d.paymentMode||'-')+'</td><td>'+fdate(d.createdAt)+'</td><td style="white-space:nowrap"><button class="bs pr" onclick="viewBillById(\\\''+d.id+'\')" title="View">👁️</button> <button class="bs gr" onclick="printBillById(\\\''+d.id+'\')" title="Print">🖨️</button></td></tr>';});
       el.innerHTML=html+'</tbody></table>';
     }).catch(function(){});
 }
@@ -1414,7 +1646,7 @@ function loadDrs(){
           '<td>'+cur(d.consultationFee||d.fee||0)+'</td>'+
           '<td>'+cur(d.visitFee||d.ipdVisitFee||0)+'/day</td>'+
           '<td>'+esc(d.phone||'-')+'</td>'+
-          '<td><button class="bs re" onclick="delDr(\''+d.id+'\')">🗑️</button></td></tr>';
+          '<td><button class="bs re" onclick="delDr(\\\''+d.id+'\')">🗑️</button></td></tr>';
       });
       el.innerHTML=html+'</tbody></table>';
     }).catch(function(){var el=ge('dr-list');if(el)el.innerHTML='<div class="es"><div class="ei">❌</div><p>Failed to load</p></div>';});
@@ -1425,49 +1657,448 @@ function delDr(id){
     .then(function(){toast('Deleted','s');loadDrs();preload();}).catch(function(e){toast(e.message,'e');});
 }
 
+// RATE CHART
+PAGES.ratechart=function(){
+  var h=hid();if(!h)return;
+  ge('content').innerHTML=
+    '<div class="ph2"><span class="pt2">💰 Rate Chart</span><button class="btn-n" onclick="addRateItem()">➕ Add Rate</button></div>'+
+    '<div style="background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--t2)">'+
+      'Apne hospital ke service rates yahan set karo. Billing mein auto-fill hoga.'+
+    '</div>'+
+    '<div class="page-tabs" style="margin-bottom:14px">'+
+      '<button class="ptab active" onclick="loadRates(this,\'OPD\')">🏃 OPD</button>'+
+      '<button class="ptab" onclick="loadRates(this,\'Lab\')">🧪 Lab</button>'+
+      '<button class="ptab" onclick="loadRates(this,\'IPD\')">🛏️ IPD/Room</button>'+
+      '<button class="ptab" onclick="loadRates(this,\'Procedure\')">⚕️ Procedure</button>'+
+      '<button class="ptab" onclick="loadRates(this,\'All\')">All</button>'+
+    '</div>'+
+    '<div class="tw"><div class="tw-h"><span class="tw-t">Service Rates</span></div>'+
+    '<div id="rate-list"><div class="ld"><div class="sp"></div></div></div></div>'+
+    '<div id="m-rate" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:16px">'+
+      '<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:420px;padding:20px">'+
+        '<div style="font-family:Syne,sans-serif;font-weight:700;font-size:15px;margin-bottom:14px">💰 Add / Edit Rate</div>'+
+        '<input type="hidden" id="rate-edit-id">'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+          '<div><label class="lbl">Service Name *</label><input id="rate-name" class="fld" placeholder="Consultation"></div>'+
+          '<div><label class="lbl">Category</label>'+
+            '<select id="rate-cat" class="fld"><option>OPD</option><option>Lab</option><option>IPD</option><option>Procedure</option><option>Other</option></select>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+          '<div><label class="lbl">Rate (₹) *</label><input id="rate-price" class="fld" type="number" placeholder="500"></div>'+
+          '<div><label class="lbl">Unit</label><input id="rate-unit" class="fld" placeholder="per visit"></div>'+
+        '</div>'+
+        '<label class="lbl">Description</label>'+
+        '<input id="rate-desc" class="fld" placeholder="Optional description">'+
+        '<div style="display:flex;gap:8px;margin-top:8px">'+
+          '<button onclick="saveRate()" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--sky),var(--teal));border:none;border-radius:8px;color:#fff;font-weight:700;cursor:pointer">💾 Save</button>'+
+          '<button onclick="ge(\'m-rate\').style.display=\'none\';" style="padding:10px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer">Cancel</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  loadRates(null,'OPD');
+};
+function addRateItem(item){
+  ['rate-name','rate-price','rate-unit','rate-desc'].forEach(function(id){var el=ge(id);if(el)el.value='';});
+  if(ge('rate-edit-id'))ge('rate-edit-id').value='';
+  if(ge('rate-cat'))ge('rate-cat').value='OPD';
+  if(item){
+    if(ge('rate-edit-id'))ge('rate-edit-id').value=item.id||'';
+    if(ge('rate-name'))ge('rate-name').value=item.name||'';
+    if(ge('rate-cat'))ge('rate-cat').value=item.category||'OPD';
+    if(ge('rate-price'))ge('rate-price').value=item.rate||'';
+    if(ge('rate-unit'))ge('rate-unit').value=item.unit||'';
+    if(ge('rate-desc'))ge('rate-desc').value=item.description||'';
+  }
+  ge('m-rate').style.display='flex';
+}
+function saveRate(){
+  var h=hid();if(!h)return;
+  var name=(ge('rate-name').value||'').trim();
+  var price=parseFloat(ge('rate-price').value)||0;
+  if(!name||!price){toast('Name and rate required','e');return;}
+  var editId=ge('rate-edit-id').value||'';
+  var data={id:editId||Date.now().toString(),hospitalId:h,name:name,category:ge('rate-cat').value||'OPD',rate:price,unit:ge('rate-unit').value||'',description:ge('rate-desc').value||''};
+  try{
+    var rates=JSON.parse(localStorage.getItem('mc_rates_'+h)||'[]');
+    if(editId){var idx=rates.findIndex(function(r){return r.id===editId;});if(idx>=0)rates[idx]=data;else rates.push(data);}
+    else rates.push(data);
+    localStorage.setItem('mc_rates_'+h,JSON.stringify(rates));
+  }catch(x){}
+  ge('m-rate').style.display='none';
+  toast('Rate saved ✅','s');
+  loadRates(null,'All');
+}
+function deleteRate(id){
+  if(!confirm('Delete this rate?'))return;
+  var h=hid();
+  try{var rates=JSON.parse(localStorage.getItem('mc_rates_'+h)||'[]');rates=rates.filter(function(r){return r.id!==id;});localStorage.setItem('mc_rates_'+h,JSON.stringify(rates));}catch(x){}
+  toast('Deleted','s');loadRates(null,'All');
+}
+function loadRates(btn,cat){
+  if(btn){document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('active');});btn.classList.add('active');}
+  var h=hid();if(!h)return;var el=ge('rate-list');if(!el)return;
+  var rates=[];
+  try{rates=JSON.parse(localStorage.getItem('mc_rates_'+h)||'[]');}catch(x){}
+  if(cat&&cat!=='All')rates=rates.filter(function(r){return r.category===cat;});
+  if(!rates.length){el.innerHTML='<div class="es"><div class="ei">💰</div><p>No rates set. Add your hospital service rates!</p></div>';return;}
+  var html='<table><thead><tr><th>Service</th><th>Category</th><th>Rate</th><th>Unit</th><th>Description</th><th>Action</th></tr></thead><tbody>';
+  rates.forEach(function(r){
+    html+='<tr>'+
+      '<td><strong>'+esc(r.name||'-')+'</strong></td>'+
+      '<td><span class="badge bl">'+esc(r.category||'-')+'</span></td>'+
+      '<td><strong style="color:var(--green)">'+cur(r.rate||0)+'</strong></td>'+
+      '<td style="font-size:11px;color:var(--t2)">'+esc(r.unit||'-')+'</td>'+
+      '<td style="font-size:11px;color:var(--t2)">'+esc(r.description||'-')+'</td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="bs pr" onclick="addRateItem(JSON.parse(decodeURIComponent(\\\''+encodeURIComponent(JSON.stringify(r))+'\')))" title="Edit">✏️</button> '+
+        '<button class="bs re" onclick="deleteRate(\\\''+r.id+'\')">🗑️</button>'+
+      '</td></tr>';
+  });
+  el.innerHTML=html+'</tbody></table>';
+}
+
 // STAFF
 PAGES.staff=function(){
-  ge('content').innerHTML='<div class="ph2"><span class="pt2">👔 Staff</span></div>'+
-    '<div class="tw"><div class="tw-h"><span class="tw-t">Staff Members</span></div>'+
+  var isAdmin=S.user&&S.user.role==='hospital_admin';
+  ge('content').innerHTML='<div class="ph2"><span class="pt2">👔 All Staff</span>'+
+    (isAdmin?'<button class="btn-n" onclick="nav(\'staff_approve\')">⏳ Pending Requests <span id="sb-pending" style="background:#ef4444;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px">0</span></button>':'')+
+  '</div>'+
+    '<div class="sg sg-3" id="staff-stats"></div>'+
+    '<div class="tw"><div class="tw-h"><span class="tw-t">Staff Members</span><div class="sb">🔍 <input id="st-sr" placeholder="Search staff..."></div></div>'+
     '<div id="st-list"><div class="ld"><div class="sp"></div></div></div></div>';
-  var h=hid();if(!h)return;
-  api('GET','/staff?hospitalId='+h+'&limit=100')
-    .then(function(res){
-      var data=res.staff||res.data||[];var el=ge('st-list');if(!el)return;
-      if(!data.length){el.innerHTML='<div class="es"><div class="ei">👔</div><p>No staff members</p></div>';return;}
-      var html='<table><thead><tr><th>Name</th><th>Role</th><th>Dept</th><th>Phone</th><th>Status</th></tr></thead><tbody>';
-      data.forEach(function(s){html+='<tr><td><strong>'+esc(s.name||'-')+'</strong></td><td><span class="badge purple">'+esc(s.role||'-')+'</span></td><td>'+esc(s.department||'-')+'</td><td>'+esc(s.phone||'-')+'</td><td><span class="badge '+(s.status==='active'?'green':'red')+'">'+(s.status||'active')+'</span></td></tr>';});
-      el.innerHTML=html+'</tbody></table>';
-    }).catch(function(){});
+  loadAllStaff();
+  if(isAdmin)loadPendingCount();
+  setTimeout(function(){var sr=ge('st-sr');if(sr)sr.addEventListener('input',function(){loadAllStaff(this.value);});},100);
 };
+function loadAllStaff(q){
+  var h=hid();if(!h)return;
+  var isAdmin=S.user&&S.user.role==='hospital_admin';
+  api('GET','/auth/all-staff?hospitalId='+h)
+    .then(function(res){
+      var staff=res.staff||[];
+      if(q)staff=staff.filter(function(s){return (s.name||'').toLowerCase().includes(q.toLowerCase())||(s.role||'').toLowerCase().includes(q.toLowerCase());});
+      // Stats
+      var active=staff.filter(function(s){return s.status==='active';}).length;
+      var pending=staff.filter(function(s){return s.status==='pending';}).length;
+      var el2=ge('staff-stats');
+      if(el2)el2.innerHTML=
+        '<div class="sc bl"><div class="sc-i">👔</div><div class="sc-v">'+staff.length+'</div><div class="sc-l">Total Staff</div></div>'+
+        '<div class="sc gr"><div class="sc-i">✅</div><div class="sc-v">'+active+'</div><div class="sc-l">Active</div></div>'+
+        '<div class="sc or"><div class="sc-i">⏳</div><div class="sc-v">'+pending+'</div><div class="sc-l">Pending</div></div>';
+      var el=ge('st-list');if(!el)return;
+      if(!staff.length){el.innerHTML='<div class="es"><div class="ei">👔</div><p>No staff members yet. Staff can register using the Staff Register tab on login page.</p></div>';return;}
+      var html='<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Dept</th><th>Phone</th><th>Last Login</th><th>Status</th>'+(isAdmin?'<th>Action</th>':'')+'</tr></thead><tbody>';
+      staff.forEach(function(s){
+        var st=s.status||'active';
+        var bc=st==='active'?'green':st==='pending'?'orange':'red';
+        html+='<tr>'+
+          '<td><strong>'+esc(s.name||'-')+'</strong></td>'+
+          '<td style="font-size:11px">'+esc(s.email||'-')+'</td>'+
+          '<td><span class="badge purple">'+esc(ROLE_LABELS[s.role]||s.role||'-')+'</span></td>'+
+          '<td>'+esc(s.department||'-')+'</td>'+
+          '<td>'+esc(s.phone||'-')+'</td>'+
+          '<td style="font-size:11px">'+fdate(s.lastLogin)+'</td>'+
+          '<td><span class="badge '+bc+'">'+st+'</span></td>'+
+          (isAdmin?'<td>'+
+            '<button class="bs '+(st==='active'?'or':'gr')+'" onclick="toggleStaff(\\\''+s.id+'\',\\\''+st+'\')">'+(st==='active'?'🔒 Deactivate':'🔓 Activate')+'</button> '+
+            '<button class="bs re" onclick="deleteStaff(\\\''+s.id+'\')" >🗑️</button>'+
+          '</td>':'')+
+          '</tr>';
+      });
+      el.innerHTML=html+'</tbody></table>';
+    }).catch(function(){var el=ge('st-list');if(el)el.innerHTML='<div class="es"><div class="ei">❌</div><p>Failed to load</p></div>';});
+}
+function toggleStaff(id,curStatus){
+  var msg=curStatus==='active'?'Deactivate this staff?':'Activate this staff?';
+  if(!confirm(msg))return;
+  api('PUT','/auth/toggle-staff/'+id,{})
+    .then(function(r){toast('Status: '+r.status,'s');loadAllStaff();}).catch(function(e){toast(e.message,'e');});
+}
+function deleteStaff(id){
+  if(!confirm('Delete this staff permanently?'))return;
+  api('DELETE','/auth/staff/'+id,{})
+    .then(function(){toast('Staff removed','s');loadAllStaff();}).catch(function(e){toast(e.message,'e');});
+}
+
+// STAFF APPROVE (Admin only)
+PAGES.staff_approve=function(){
+  ge('content').innerHTML='<div class="ph2"><span class="pt2">⏳ Pending Staff Approvals</span></div>'+
+    '<div id="approve-list"><div class="ld"><div class="sp"></div></div></div>';
+  loadPendingStaff();
+};
+function loadPendingStaff(){
+  var h=hid();if(!h)return;
+  api('GET','/auth/pending-staff?hospitalId='+h)
+    .then(function(res){
+      var staff=res.staff||[];
+      var badge=ge('pending-badge');
+      if(badge){badge.textContent=staff.length;badge.style.display=staff.length>0?'inline':'none';}
+      var el=ge('approve-list');if(!el)return;
+      if(!staff.length){
+        el.innerHTML='<div class="es"><div class="ei">✅</div><p>No pending approvals! Sab clear hai.</p></div>';
+        return;
+      }
+      var html='<div class="sg sg-3" style="margin-bottom:14px">'+
+        '<div class="sc or"><div class="sc-i">⏳</div><div class="sc-v">'+staff.length+'</div><div class="sc-l">Pending Approvals</div></div>'+
+      '</div>'+
+      '<div class="tw"><div class="tw-h"><span class="tw-t">Staff Registration Requests</span></div>'+
+      '<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Dept</th><th>Phone</th><th>Qualification</th><th>Requested</th><th>Action</th></tr></thead><tbody>';
+      staff.forEach(function(s){
+        html+='<tr>'+
+          '<td><strong>'+esc(s.name)+'</strong></td>'+
+          '<td>'+esc(s.email)+'</td>'+
+          '<td><span class="badge purple">'+esc(ROLE_LABELS[s.role]||s.role)+'</span></td>'+
+          '<td>'+esc(s.department||'-')+'</td>'+
+          '<td>'+esc(s.phone||'-')+'</td>'+
+          '<td>'+esc(s.qualification||'-')+'</td>'+
+          '<td>'+fdate(s.requestedAt)+'</td>'+
+          '<td>'+
+            '<button class="bs gr" data-sid="'+s.id+'" data-act="approve" onclick="approveStaffBtn(this)">✅ Approve</button> '+
+            '<button class="bs re" data-sid="'+s.id+'" data-act="reject" onclick="approveStaffBtn(this)">❌ Reject</button>'+
+          '</td></tr>';
+      });
+      el.innerHTML=html+'</tbody></table></div>';
+    }).catch(function(){ge('approve-list').innerHTML='<div class="es"><div class="ei">❌</div><p>Failed to load</p></div>';});
+}
+function approveStaffBtn(btn){approveStaff(btn.dataset.sid,btn.dataset.act);}
+function approveStaff(userId,action){
+  var msg=action==='approve'?'Approve this staff member?':'Reject this registration request?';
+  if(!confirm(msg))return;
+  api('PUT','/auth/approve-staff/'+userId,{action:action})
+    .then(function(){
+      toast(action==='approve'?'Staff approved! ✅ They can now login.':'Request rejected.', action==='approve'?'s':'w');
+      loadPendingStaff();
+    }).catch(function(e){toast(e.message,'e');});
+}
 
 // INVENTORY
 PAGES.inventory=function(){
-  ge('content').innerHTML='<div class="ph2"><span class="pt2">📦 Inventory</span></div>'+
-    '<div class="tw"><div class="tw-h"><span class="tw-t">Stock Items</span></div>'+
-    '<div id="inv-list"><div class="ld"><div class="sp"></div></div></div></div>';
-  var h=hid();if(!h)return;
-  api('GET','/inventory?hospitalId='+h+'&limit=100')
-    .then(function(res){
-      var data=res.items||res.data||[];var el=ge('inv-list');if(!el)return;
-      if(!data.length){el.innerHTML='<div class="es"><div class="ei">📦</div><p>No items</p></div>';return;}
-      var html='<table><thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Unit</th><th>Status</th></tr></thead><tbody>';
-      data.forEach(function(i){var low=(i.quantity||0)<=(i.minStock||10);html+='<tr><td><strong>'+esc(i.name||'-')+'</strong></td><td>'+esc(i.category||'-')+'</td><td><strong style="color:'+(low?'var(--red)':'var(--green)')+'">'+( i.quantity||0)+'</strong></td><td>'+esc(i.unit||'pcs')+'</td><td><span class="badge '+(low?'red':'green')+'">'+(low?'Low Stock':'In Stock')+'</span></td></tr>';});
-      el.innerHTML=html+'</tbody></table>';
-    }).catch(function(){});
+  ge('content').innerHTML=
+    '<div class="ph2"><span class="pt2">📦 Inventory</span><button class="btn-n" onclick="openInvModal()">➕ Add Product</button></div>'+
+    '<div class="sg sg-3">'+
+      '<div class="sc bl"><div class="sc-i">📦</div><div class="sc-v" id="inv-total">-</div><div class="sc-l">Total Items</div></div>'+
+      '<div class="sc re"><div class="sc-i">⚠️</div><div class="sc-v" id="inv-low">-</div><div class="sc-l">Low Stock</div></div>'+
+      '<div class="sc gr"><div class="sc-i">✅</div><div class="sc-v" id="inv-ok">-</div><div class="sc-l">In Stock</div></div>'+
+    '</div>'+
+    '<div class="tw"><div class="tw-h"><span class="tw-t">Stock Items</span>'+
+      '<div class="sbx">🔍 <input id="inv-sr" placeholder="Search item..." oninput="loadInventory(this.value)"></div>'+
+    '</div>'+
+    '<div id="inv-list"><div class="ld"><div class="sp"></div></div></div></div>'+
+    // Inventory Modal
+    '<div id="m-inv" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);align-items:center;justify-content:center;padding:16px">'+
+      '<div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:460px;overflow:hidden">'+
+        '<div style="background:linear-gradient(135deg,var(--sky),var(--teal));padding:14px 16px;display:flex;justify-content:space-between;align-items:center">'+
+          '<span id="inv-m-title" style="font-family:Syne,sans-serif;font-weight:700;font-size:14px">➕ Add Product</span>'+
+          '<button onclick="ge(\'m-inv\').style.display=\'none\'" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer">✕</button>'+
+        '</div>'+
+        '<div style="padding:16px">'+
+          '<input type="hidden" id="inv-edit-id">'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+            '<div><label class="lbl">Product Name *</label><input id="inv-name" class="fld" placeholder="Paracetamol 500mg"></div>'+
+            '<div><label class="lbl">Category</label>'+
+              '<select id="inv-cat" class="fld">'+
+                '<option>Medicine</option><option>Surgical</option><option>Equipment</option>'+
+                '<option>Lab Reagent</option><option>Consumable</option><option>Other</option>'+
+              '</select>'+
+            '</div>'+
+          '</div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">'+
+            '<div><label class="lbl">Quantity *</label><input id="inv-qty" class="fld" type="number" placeholder="100"></div>'+
+            '<div><label class="lbl">Unit</label><input id="inv-unit" class="fld" placeholder="pcs"></div>'+
+            '<div><label class="lbl">Min Stock Alert</label><input id="inv-min" class="fld" type="number" placeholder="10"></div>'+
+          '</div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+            '<div><label class="lbl">Purchase Price (₹)</label><input id="inv-buy" class="fld" type="number" placeholder="0"></div>'+
+            '<div><label class="lbl">Selling Price (₹)</label><input id="inv-sell" class="fld" type="number" placeholder="0"></div>'+
+          '</div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+            '<div><label class="lbl">Expiry Date</label><input id="inv-exp" class="fld" type="date"></div>'+
+            '<div><label class="lbl">Batch No.</label><input id="inv-batch" class="fld" placeholder="BAT001"></div>'+
+          '</div>'+
+          '<label class="lbl">Notes</label>'+
+          '<input id="inv-notes" class="fld" placeholder="Optional notes">'+
+          '<button onclick="saveInventoryItem()" style="width:100%;padding:11px;background:linear-gradient(135deg,var(--sky),var(--teal));border:none;border-radius:9px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-top:4px">💾 Save Product</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  loadInventory();
 };
+function openInvModal(item){
+  ['inv-name','inv-qty','inv-unit','inv-min','inv-buy','inv-sell','inv-exp','inv-batch','inv-notes'].forEach(function(id){var el=ge(id);if(el)el.value='';});
+  if(ge('inv-edit-id'))ge('inv-edit-id').value='';
+  if(ge('inv-cat'))ge('inv-cat').value='Medicine';
+  if(ge('inv-m-title'))ge('inv-m-title').textContent='➕ Add Product';
+  if(item){
+    if(ge('inv-edit-id'))ge('inv-edit-id').value=item.id||'';
+    if(ge('inv-name'))ge('inv-name').value=item.name||'';
+    if(ge('inv-cat'))ge('inv-cat').value=item.category||'Medicine';
+    if(ge('inv-qty'))ge('inv-qty').value=item.quantity||0;
+    if(ge('inv-unit'))ge('inv-unit').value=item.unit||'pcs';
+    if(ge('inv-min'))ge('inv-min').value=item.minStock||10;
+    if(ge('inv-buy'))ge('inv-buy').value=item.purchasePrice||0;
+    if(ge('inv-sell'))ge('inv-sell').value=item.sellingPrice||0;
+    if(ge('inv-exp'))ge('inv-exp').value=(item.expiryDate||'').split('T')[0]||'';
+    if(ge('inv-batch'))ge('inv-batch').value=item.batchNo||'';
+    if(ge('inv-notes'))ge('inv-notes').value=item.notes||'';
+    if(ge('inv-m-title'))ge('inv-m-title').textContent='✏️ Edit Product';
+  }
+  ge('m-inv').style.display='flex';
+}
+function saveInventoryItem(){
+  var h=hid();if(!h)return;
+  var editId=ge('inv-edit-id').value||'';
+  var name=(ge('inv-name').value||'').trim();
+  if(!name){toast('Product name required','e');return;}
+  var data={
+    hospitalId:h,name:name,
+    category:ge('inv-cat').value||'Medicine',
+    quantity:parseInt(ge('inv-qty').value)||0,
+    unit:ge('inv-unit').value||'pcs',
+    minStock:parseInt(ge('inv-min').value)||10,
+    purchasePrice:parseFloat(ge('inv-buy').value)||0,
+    sellingPrice:parseFloat(ge('inv-sell').value)||0,
+    expiryDate:ge('inv-exp').value||'',
+    batchNo:ge('inv-batch').value||'',
+    notes:ge('inv-notes').value||''
+  };
+  var req=editId?api('PUT','/inventory/'+editId,data):api('POST','/inventory',data);
+  req.then(function(){
+    ge('m-inv').style.display='none';
+    toast((editId?'Updated':'Added')+' ✅','s');
+    loadInventory();
+  }).catch(function(e){toast(e.message,'e');});
+}
+function deleteInventoryItem(id,name){
+  if(!confirm('Delete "'+name+'"?'))return;
+  api('DELETE','/inventory/'+id+'?hospitalId='+hid())
+    .then(function(){toast('Deleted','s');loadInventory();}).catch(function(e){toast(e.message,'e');});
+}
+function loadInventory(q){
+  var h=hid();if(!h)return;
+  api('GET','/inventory?hospitalId='+h+'&limit=200')
+    .then(function(res){
+      var data=res.items||res.data||[];
+      if(q)data=data.filter(function(i){return (i.name||'').toLowerCase().includes(q.toLowerCase())||(i.category||'').toLowerCase().includes(q.toLowerCase());});
+      var low=data.filter(function(i){return (i.quantity||0)<=(i.minStock||10);}).length;
+      if(ge('inv-total'))ge('inv-total').textContent=data.length;
+      if(ge('inv-low'))ge('inv-low').textContent=low;
+      if(ge('inv-ok'))ge('inv-ok').textContent=data.length-low;
+      var el=ge('inv-list');if(!el)return;
+      if(!data.length){el.innerHTML='<div class="es"><div class="ei">📦</div><p>No items. Add your first product!</p></div>';return;}
+      var html='<table><thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Min</th><th>Buy Price</th><th>Sell Price</th><th>Expiry</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+      data.forEach(function(i){
+        var low2=(i.quantity||0)<=(i.minStock||10);
+        var expSoon=i.expiryDate&&new Date(i.expiryDate)<new Date(Date.now()+30*24*60*60*1000);
+        html+='<tr>'+
+          '<td><strong>'+esc(i.name||'-')+'</strong>'+(i.batchNo?'<br><span style="font-size:10px;color:var(--t3)">'+esc(i.batchNo)+'</span>':'')+
+          (i.notes?'<br><span style="font-size:10px;color:var(--t3)">'+esc(i.notes)+'</span>':'')+
+          '</td>'+
+          '<td><span class="badge bl">'+esc(i.category||'-')+'</span></td>'+
+          '<td><strong style="color:'+(low2?'var(--red)':'var(--green)')+'">'+( i.quantity||0)+'</strong> '+esc(i.unit||'pcs')+'</td>'+
+          '<td style="color:var(--t3)">'+( i.minStock||10)+'</td>'+
+          '<td>'+cur(i.purchasePrice||0)+'</td>'+
+          '<td><strong>'+cur(i.sellingPrice||0)+'</strong></td>'+
+          '<td style="font-size:11px'+(expSoon?';color:var(--red)':'')+'">'+( i.expiryDate?fdate(i.expiryDate):'-')+(expSoon?' ⚠️':'')+'</td>'+
+          '<td><span class="badge '+(low2?'red':'green')+'">'+(low2?'Low Stock':'In Stock')+'</span></td>'+
+          '<td style="white-space:nowrap">'+
+            '<button class="bs pr" onclick="openInvModal('+JSON.stringify(i).replace(/'/g,"&#39;")+')" title="Edit">✏️</button> '+
+            '<button class="bs re" onclick="deleteInventoryItem(\\\''+i.id+'\',\\\''+esc(i.name||'')+'\')">🗑️</button>'+
+          '</td></tr>';
+      });
+      el.innerHTML=html+'</tbody></table>';
+    }).catch(function(e){var el=ge('inv-list');if(el)el.innerHTML='<div class="es"><div class="ei">❌</div><p>'+esc(e.message)+'</p></div>';});
+}
 
 // REPORTS
 PAGES.reports=function(){
-  ge('content').innerHTML='<div class="ph2"><span class="pt2">📈 Reports & Analytics</span></div>'+
+  ge('content').innerHTML='<div class="ph2"><span class="pt2">📈 Reports & Analytics</span>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button class="btn-n" onclick="downloadReport(\'daily\')">⬇️ Daily PDF</button>'+
+      '<button class="btn-n" onclick="downloadReport(\'monthly\')">⬇️ Monthly PDF</button>'+
+    '</div></div>'+
     '<div class="page-tabs">'+
-      '<button class="ptab active" onclick="loadReport(this,\'daily\')">Daily</button>'+
-      '<button class="ptab" onclick="loadReport(this,\'billing\')">Billing Summary</button>'+
-      '<button class="ptab" onclick="loadReport(this,\'patients\')">Patient Stats</button>'+
+      '<button class="ptab active" onclick="loadReport(this,\\\'daily\\\')">📅 Today</button>'+
+      '<button class="ptab" onclick="loadReport(this,\\\'monthly\\\')">📆 This Month</button>'+
+      '<button class="ptab" onclick="loadReport(this,\\\'billing\\\')">💰 Billing Summary</button>'+
+      '<button class="ptab" onclick="loadReport(this,\\\'patients\\\')">👥 Patient Stats</button>'+
     '</div>'+
     '<div id="rpt-body"><div class="ld"><div class="sp"></div></div></div>';
   loadReport(null,'daily');
 };
+function downloadReport(type){
+  var h=hid();if(!h)return;
+  var hosp=S.hospital||{};
+  var today2=new Date().toISOString().split('T')[0];
+  Promise.all([
+    api('GET','/billing?hospitalId='+h+'&limit=500'),
+    api('GET','/patients?hospitalId='+h+'&limit=1'),
+    api('GET','/laboratory?hospitalId='+h+'&limit=200')
+  ]).then(function(r){
+    var bills=r[0].bills||[];
+    var today3=new Date().toISOString().split('T')[0];
+    var monthStart=new Date();monthStart.setDate(1);monthStart=monthStart.toISOString().split('T')[0];
+    if(type==='daily') bills=bills.filter(function(b){return (b.createdAt||'').startsWith(today3);});
+    else bills=bills.filter(function(b){return (b.createdAt||'')>=monthStart;});
+    var labs=r[2].tests||r[2].data||[];
+    if(type==='daily') labs=labs.filter(function(t){return (t.createdAt||'').startsWith(today3);});
+    else labs=labs.filter(function(t){return (t.createdAt||'')>=monthStart;});
+    var rev=bills.reduce(function(s,b){return s+(b.status==='paid'?b.totalAmount||b.amount||0:0);},0);
+    var opdRev=bills.filter(function(b){return (b.billType||'').toLowerCase()==='opd';}).reduce(function(s,b){return s+(b.totalAmount||b.amount||0);},0);
+    var labRev=bills.filter(function(b){return (b.billType||'').toLowerCase().includes('lab');}).reduce(function(s,b){return s+(b.totalAmount||b.amount||0);},0);
+    var rows=bills.map(function(b,i){
+      return '<tr><td style="border:1px solid #ddd;padding:4px 7px">'+(i+1)+'</td>'+
+        '<td style="border:1px solid #ddd;padding:4px 7px">'+esc(b.billNumber||'-')+'</td>'+
+        '<td style="border:1px solid #ddd;padding:4px 7px">'+esc(b.patientName||'-')+'</td>'+
+        '<td style="border:1px solid #ddd;padding:4px 7px">'+esc(b.billType||'-')+'</td>'+
+        '<td style="border:1px solid #ddd;padding:4px 7px;text-align:right">'+cur(b.totalAmount||b.amount||0)+'</td>'+
+        '<td style="border:1px solid #ddd;padding:4px 7px">'+esc(b.paymentMode||'-')+'</td>'+
+        '<td style="border:1px solid #ddd;padding:4px 7px">'+fdate(b.createdAt)+'</td></tr>';
+    }).join('');
+    var rptHtml='<div style="font-family:Arial,sans-serif;padding:20px;max-width:800px;margin:0 auto">'+
+      '<div style="text-align:center;border-bottom:2px solid #000;padding-bottom:12px;margin-bottom:16px">'+
+        '<h1 style="font-size:20px;font-weight:900;margin:0">'+esc(hosp.name||'Hospital')+'</h1>'+
+        (hosp.address?'<p style="font-size:11px;margin:4px 0">'+esc(hosp.address)+'</p>':'')+
+        '<h2 style="font-size:15px;margin:8px 0 0">'+(type==='daily'?'DAILY':'MONTHLY')+' REPORT — '+today2+'</h2>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">'+
+        '<div style="border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#0ea5e9">'+cur(rev)+'</div><div style="font-size:10px;color:#666">Total Revenue</div></div>'+
+        '<div style="border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#10b981">'+bills.length+'</div><div style="font-size:10px;color:#666">Total Bills</div></div>'+
+        '<div style="border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#f59e0b">'+cur(opdRev)+'</div><div style="font-size:10px;color:#666">OPD Revenue</div></div>'+
+        '<div style="border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:#8b5cf6">'+cur(labRev)+'</div><div style="font-size:10px;color:#666">Lab Revenue</div></div>'+
+      '</div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px">'+
+        '<thead><tr style="background:#f0f0f0">'+
+          '<th style="border:1px solid #ddd;padding:5px 7px">#</th>'+
+          '<th style="border:1px solid #ddd;padding:5px 7px">Bill No</th>'+
+          '<th style="border:1px solid #ddd;padding:5px 7px">Patient</th>'+
+          '<th style="border:1px solid #ddd;padding:5px 7px">Type</th>'+
+          '<th style="border:1px solid #ddd;padding:5px 7px;text-align:right">Amount</th>'+
+          '<th style="border:1px solid #ddd;padding:5px 7px">Payment</th>'+
+          '<th style="border:1px solid #ddd;padding:5px 7px">Date</th>'+
+        '</tr></thead>'+
+        '<tbody>'+rows+'</tbody>'+
+        '<tfoot><tr style="background:#f9f9f9;font-weight:700">'+
+          '<td colspan="4" style="border:1px solid #ddd;padding:5px 7px;text-align:right">TOTAL</td>'+
+          '<td style="border:1px solid #ddd;padding:5px 7px;text-align:right">'+cur(rev)+'</td>'+
+          '<td colspan="2" style="border:1px solid #ddd;padding:5px 7px"></td>'+
+        '</tr></tfoot>'+
+      '</table>'+
+      '<div style="font-size:10px;color:#888;text-align:center;border-top:1px solid #ddd;padding-top:8px">'+
+        'Generated on '+new Date().toLocaleString('en-IN')+' | '+esc(hosp.name||'')+
+      '</div>'+
+    '</div>';
+    // Print to PDF
+    var frame=document.createElement('iframe');
+    frame.style.cssText='position:fixed;left:-9999px;top:-9999px;width:210mm;height:297mm;border:none;';
+    document.body.appendChild(frame);
+    var doc=frame.contentDocument||frame.contentWindow.document;
+    doc.open();doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+(type==='daily'?'Daily':'Monthly')+' Report</title><style>@page{size:A4;margin:10mm;}body{margin:0;}</style></head><body>'+rptHtml+'</body></html>');doc.close();
+    frame.contentWindow.focus();
+    setTimeout(function(){frame.contentWindow.print();setTimeout(function(){document.body.removeChild(frame);},2000);},600);
+    toast('PDF download — choose "Save as PDF" ✅','s');
+  }).catch(function(e){toast(e.message,'e');});
+}
 function loadReport(btn,type){
   if(btn){document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('active');});btn.classList.add('active');}
   var h=hid();if(!h)return;
@@ -1537,6 +2168,16 @@ PAGES.settings=function(){
       '</div>'+
       '<div class="fg"><label class="lbl">Admin Email</label><input class="fld" value="'+esc((S.user&&S.user.email)||'')+'" disabled></div>'+
       '<button class="ba" onclick="saveSettings()">💾 Save Settings</button>'+
+    '</div></div>'+
+    '<div class="tw" style="max-width:580px;margin-top:14px"><div class="tw-h"><span class="tw-t">🔐 Staff Registration Code</span></div>'+
+    '<div style="padding:16px">'+
+      '<p style="font-size:12px;color:var(--t2);margin-bottom:12px">Staff members ko yeh code dena hoga registration ke liye. Code share karo apne staff ke saath.</p>'+
+      '<div id="hosp-code-display" style="background:var(--bg3);border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;margin-bottom:10px">'+
+        '<span id="hc-val" style="font-size:28px;font-weight:900;letter-spacing:8px;color:var(--accent)">'+(S.hospital&&S.hospital.hospitalCode||'- - - - - -')+'</span>'+
+        '<p style="font-size:11px;color:var(--t2);margin-top:4px">Hospital Code</p>'+
+      '</div>'+
+      '<button class="btn-n" style="width:100%;justify-content:center" onclick="genHospCode()">🔄 Generate New Code</button>'+
+      '<p style="font-size:10px;color:var(--t3);margin-top:6px;text-align:center">New code generate karne se purana code invalid ho jayega</p>'+
     '</div></div>';
   setTimeout(function(){
     var li=ge('set-li');
@@ -1551,6 +2192,18 @@ PAGES.settings=function(){
     });
   },100);
 };
+function genHospCode(){
+  var h=hid();if(!h){toast('Login required','e');return;}
+  if(!confirm('Generate new hospital code? Old code will stop working.'))return;
+  api('POST','/auth/generate-hospital-code',{hospitalId:h})
+    .then(function(r){
+      if(S.hospital)S.hospital.hospitalCode=r.hospitalCode;
+      saveSess();
+      var hcv=ge('hc-val');if(hcv)hcv.textContent=r.hospitalCode;
+      toast('New code: '+r.hospitalCode+' — Share with your staff! 🔑','s');
+    }).catch(function(e){toast(e.message,'e');});
+}
+
 function saveSettings(){
   if(S.hospital){
     S.hospital.address=ge('set-addr')&&ge('set-addr').value||'';
@@ -1756,7 +2409,7 @@ function addDoctor(){
 
 function resetBillModal(prefix){
   var wrap=ge(prefix+'-items');if(!wrap)return;
-  wrap.innerHTML='<div class="bi-row"><input class="fld item-desc" placeholder="Description" style="margin:0"><input class="fld item-qty" type="number" value="1" style="margin:0" oninput="calcBillTotal(\''+prefix+'-items\',\''+prefix+'-total\')"><input class="fld item-amt" type="number" placeholder="Amount" style="margin:0" oninput="calcBillTotal(\''+prefix+'-items\',\''+prefix+'-total\')"><button onclick="remItem(this,\''+prefix+'-items\',\''+prefix+'-total\')" style="background:rgba(239,68,68,.2);border:none;color:#f87171;border-radius:5px;font-size:12px;">✕</button></div>';
+  wrap.innerHTML='<div class="bi-row"><input class="fld item-desc" placeholder="Description" style="margin:0"><input class="fld item-qty" type="number" value="1" style="margin:0" oninput="calcBillTotal(\''+prefix+'-items\',\''+prefix+'-total\')"><input class="fld item-amt" type="number" placeholder="Amount" style="margin:0" oninput="calcBillTotal(\''+prefix+'-items\',\''+prefix+'-total\')"><button onclick="remItem(this,\\\''+prefix+'-items\',\\\''+prefix+'-total\')" style="background:rgba(239,68,68,.2);border:none;color:#f87171;border-radius:5px;font-size:12px;">✕</button></div>';
   var ptf=ge(prefix+'-pt');if(ptf)ptf.value='';
   var ptid=ge(prefix+'-ptid');if(ptid)ptid.value='';
   var drf=ge(prefix+'-dr');if(drf)drf.value='';
@@ -1954,6 +2607,210 @@ function printAdmission(adm){
   window.print();setTimeout(function(){pb.style.display='none';},1500);
 }
 
+
+// ══════════════════════════════════
+// BILL VIEW MODAL + PDF DOWNLOAD
+// ══════════════════════════════════
+function viewBillById(id){
+  var h=hid();if(!h)return;
+  // Show bill in modal instead of print window
+  var modal=ge('m-bill-view');
+  if(!modal){
+    var div=document.createElement('div');
+    div.id='m-bill-view';
+    div.style.cssText='display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);overflow-y:auto;padding:16px;';
+    div.innerHTML='<div style="max-width:780px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;">'+
+      '<div style="background:#0ea5e9;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;">'+
+        '<span style="color:#fff;font-weight:700;font-size:14px">📄 Bill Preview</span>'+
+        '<div style="display:flex;gap:8px;">'+
+          '<button onclick="downloadBillPDF()" style="background:#fff;color:#0ea5e9;border:none;border-radius:7px;padding:7px 16px;font-weight:700;font-size:12px;cursor:pointer">⬇️ Download PDF</button>'+
+          '<button onclick="printCurrentBill()" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:7px;padding:7px 14px;font-size:12px;cursor:pointer">🖨️ Print</button>'+
+          '<button onclick="closeModal(\'m-bill-view\')" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:7px;padding:7px 12px;font-size:16px;cursor:pointer">✕</button>'+
+        '</div>'+
+      '</div>'+
+      '<div id="bill-view-body" style="padding:16px;"></div>'+
+    '</div>';
+    document.body.appendChild(div);
+  }
+  ge('m-bill-view').style.display='block';
+  ge('bill-view-body').innerHTML='<div style="text-align:center;padding:40px;color:#888"><div class="sp" style="margin:0 auto 10px;border-color:#ddd;border-top-color:#0ea5e9"></div>Loading bill...</div>';
+  
+  // Fetch bill data
+  var billData = null;
+  // Try billing first, then lab
+  Promise.any([
+    api('GET','/billing/'+id+'?hospitalId='+h),
+    api('GET','/laboratory/'+id+'?hospitalId='+h)
+  ]).then(function(res){
+    billData = res.bill || res.test || res;
+    renderBillInModal(billData);
+  }).catch(function(){
+    // Try direct
+    api('GET','/billing?hospitalId='+h+'&limit=500').then(function(res){
+      var bills=res.bills||[];
+      billData=bills.find(function(b){return b.id===id;})||null;
+      if(billData) renderBillInModal(billData);
+      else ge('bill-view-body').innerHTML='<div style="text-align:center;padding:40px;color:red">Bill not found</div>';
+    });
+  });
+}
+
+function renderBillInModal(b){
+  // Generate same Apollo-style bill HTML but show in modal
+  var pb=ge('pb');
+  pb.innerHTML='';pb.style.display='block';
+  printBillData(b, (b.billType||b.type||'BILL').toUpperCase()+' RECEIPT');
+  var billHtml=pb.innerHTML;
+  pb.style.display='none';
+  ge('bill-view-body').innerHTML=billHtml;
+  // Store for PDF download
+  window._currentBillHtml=billHtml;
+  window._currentBillName='Bill-'+(b.billNumber||b.id||'receipt')+'.pdf';
+}
+
+function printCurrentBill(){
+  var pb=ge('pb');
+  if(window._currentBillHtml){
+    pb.innerHTML=window._currentBillHtml;pb.style.display='block';
+    window.print();
+    setTimeout(function(){pb.style.display='none';},2000);
+  }
+}
+
+function downloadBillPDF(){
+  if(!window._currentBillHtml){toast('No bill to download','e');return;}
+  // Create printable iframe for PDF save
+  var frame=document.createElement('iframe');
+  frame.style.cssText='position:fixed;left:-9999px;top:-9999px;width:210mm;height:297mm;border:none;';
+  document.body.appendChild(frame);
+  var doc=frame.contentDocument||frame.contentWindow.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+(window._currentBillName||'Bill')+'</title>'+
+    '<style>body{margin:0;padding:10px;font-family:Arial,sans-serif;font-size:11px;}'+
+    '@page{size:A4;margin:8mm;}'+
+    '@media print{body{margin:0;}}</style>'+
+    document.querySelector('style').textContent+
+    '</head><body>'+window._currentBillHtml+'</body></html>');
+  doc.close();
+  frame.contentWindow.focus();
+  setTimeout(function(){
+    frame.contentWindow.print();
+    setTimeout(function(){document.body.removeChild(frame);},2000);
+  },600);
+  toast('PDF download dialog opening... Choose "Save as PDF" ✅','s');
+}
+
+function printBillById(id){
+  var h=hid();if(!h)return;
+  // First try billing collection
+  api('GET','/billing?hospitalId='+h+'&limit=500')
+    .then(function(res){
+      var bills=res.bills||[];
+      var b=bills.find(function(x){return x.id===id;});
+      if(b){printBillData(b,(b.billType||b.type||'BILL').toUpperCase()+' RECEIPT');return;}
+      // Try lab
+      return api('GET','/laboratory?hospitalId='+h+'&limit=200').then(function(r){
+        var tests=r.tests||r.data||[];
+        var t=tests.find(function(x){return x.id===id;});
+        if(t) printLabReceipt(t);
+        else toast('Bill not found','e');
+      });
+    }).catch(function(e){toast(e.message,'e');});
+}
+
+// ══════════════════════════════════
+// LAB RECEIPT PRINT + DOWNLOAD
+// ══════════════════════════════════
+function printLabReceipt(t){
+  var h=S.hospital||{};var logo=getLogo();
+  var logoHtml=logo?'<img src="'+logo+'" style="width:60px;height:60px;object-fit:contain">':'<div style="width:60px;height:60px;background:#0ea5e9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff">🧪</div>';
+  var tests=(t.testNames||t.tests||'Lab Test').split(',');
+  var rows='';
+  tests.forEach(function(test,i){
+    rows+='<tr><td style="border:1px solid #ccc;padding:4px 7px">'+(i+1)+'</td>'+
+          '<td style="border:1px solid #ccc;padding:4px 7px">'+esc(test.trim())+'</td>'+
+          '<td style="border:1px solid #ccc;padding:4px 7px;text-align:center">1</td>'+
+          '<td style="border:1px solid #ccc;padding:4px 7px;text-align:right">'+cur(t.amount||0)+'</td>'+
+          '<td style="border:1px solid #ccc;padding:4px 7px;text-align:right">'+cur(t.amount||0)+'</td></tr>';
+  });
+  var html='<div class="bp">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:8px">'+
+      logoHtml+
+      '<div style="text-align:center;flex:1;padding:0 12px">'+
+        '<h1 style="font-size:18px;font-weight:900;text-transform:uppercase;margin:0">'+esc(h.name||'Hospital')+'</h1>'+
+        (h.address?'<p style="font-size:10px;margin:2px 0">'+esc(h.address)+'</p>':'')+
+        '<p style="font-size:10px;margin:2px 0">Ph: '+(h.phone||'')+'</p>'+
+      '</div>'+
+      '<div style="background:#cc0000;color:#fff;font-weight:900;font-size:18px;padding:6px 10px;border-radius:4px;text-align:center">'+
+        (h.emergencyPhone||'1066')+'<br><span style="font-size:8px">EMERGENCY</span>'+
+      '</div>'+
+    '</div>'+
+    '<div style="text-align:center;font-size:13px;font-weight:900;border:2px solid #000;padding:5px;margin:6px 0">LAB TEST RECEIPT</div>'+
+    '<table style="width:100%;border-collapse:collapse;border:1px solid #000;font-size:10px;margin-bottom:6px">'+
+      '<tr>'+
+        '<td style="padding:5px 8px;border-right:1px solid #000;width:50%;vertical-align:top">'+
+          '<div style="margin:2px 0"><strong>Patient :</strong> '+esc(t.patientName||'-')+'</div>'+
+          '<div style="margin:2px 0"><strong>Doctor :</strong> '+esc(t.doctorName||'-')+'</div>'+
+          '<div style="margin:2px 0"><strong>UHID :</strong> '+esc(t.patientUHID||'-')+'</div>'+
+        '</td>'+
+        '<td style="padding:5px 8px;vertical-align:top">'+
+          '<div><strong>Test ID :</strong> '+esc(t.testId||t.id.slice(0,8))+'</div>'+
+          makeBarcode(t.testId||t.id.slice(0,8),26)+
+          '<div style="font-size:10px;margin-top:4px"><strong>Date :</strong> '+fdate(t.createdAt)+'&nbsp;&nbsp;<strong>Time :</strong> '+ftime(t.createdAt)+'</div>'+
+          '<div style="margin-top:2px"><strong>Status :</strong> <span style="color:'+(t.status==='completed'?'green':'orange')+';font-weight:700">'+esc((t.status||'pending').toUpperCase())+'</span></div>'+
+        '</td>'+
+      '</tr>'+
+    '</table>'+
+    '<table style="width:100%;border-collapse:collapse;margin:4px 0">'+
+      '<thead><tr>'+
+        '<th style="border:1px solid #ccc;padding:4px 6px;background:#f0f0f0;font-size:10px;width:40px">SL.</th>'+
+        '<th style="border:1px solid #ccc;padding:4px 6px;background:#f0f0f0;font-size:10px;text-align:left">Test Name</th>'+
+        '<th style="border:1px solid #ccc;padding:4px 6px;background:#f0f0f0;font-size:10px;width:40px">Qty</th>'+
+        '<th style="border:1px solid #ccc;padding:4px 6px;background:#f0f0f0;font-size:10px;width:70px;text-align:right">Rate</th>'+
+        '<th style="border:1px solid #ccc;padding:4px 6px;background:#f0f0f0;font-size:10px;width:80px;text-align:right">Amount</th>'+
+      '</tr></thead>'+
+      '<tbody>'+rows+'</tbody>'+
+    '</table>'+
+    '<table style="width:100%;border-collapse:collapse;margin-top:4px">'+
+      '<tr style="border-top:1px solid #000"><td style="padding:4px 6px;font-weight:bold;font-size:12px">Total Amount</td>'+
+      '<td style="padding:4px 6px;text-align:right;border-left:1px solid #ccc;font-weight:bold;font-size:12px">'+cur(t.amount||0)+'</td></tr>'+
+    '</table>'+
+    '<div style="font-style:italic;font-size:10px;border:1px solid #ddd;padding:5px;margin:6px 0;background:#fafafa">'+
+      'Amount in words : '+numWords(t.amount||0)+
+    '</div>'+
+    '<div style="display:flex;justify-content:space-between;margin-top:16px;font-size:10px">'+
+      '<div><div style="border-top:1px solid #000;padding-top:3px;min-width:110px;text-align:center">Patient Signature</div></div>'+
+      '<div><div style="border-top:1px solid #000;padding-top:3px;min-width:110px;text-align:center">Lab Technician</div></div>'+
+    '</div>'+
+    '<div style="text-align:center;margin-top:10px;font-size:9px;border-top:1px solid #ccc;padding-top:5px;color:#555">'+
+      '<p>Report will be available as per lab schedule. Please bring this receipt.</p>'+
+      '<p>'+esc(h.name||'')+(h.phone?' | Ph: '+h.phone:'')+'</p>'+
+    '</div>'+
+  '</div>';
+  var pb=ge('pb');pb.innerHTML=html;pb.style.display='block';
+  window.print();
+  setTimeout(function(){pb.style.display='none';},2000);
+}
+
+function viewLabReceipt(id){
+  var h=hid();if(!h)return;
+  api('GET','/laboratory?hospitalId='+h+'&limit=200').then(function(r){
+    var t=(r.tests||r.data||[]).find(function(x){return x.id===id;});
+    if(!t){toast('Test not found','e');return;}
+    // Show in modal
+    var modal=ge('m-bill-view');
+    if(!modal){viewBillById(id);return;}
+    ge('m-bill-view').style.display='block';
+    // Generate lab receipt HTML
+    var pb=ge('pb');pb.innerHTML='';pb.style.display='block';
+    printLabReceipt(t);
+    var html=pb.innerHTML;pb.style.display='none';
+    ge('bill-view-body').innerHTML=html;
+    window._currentBillHtml=html;
+    window._currentBillName='Lab-Receipt-'+(t.testId||t.id.slice(0,8))+'.pdf';
+  });
+}
+
 // ══════════════════════════════════
 // GLOBAL SEARCH TOPBAR
 // ══════════════════════════════════
@@ -1979,6 +2836,7 @@ function initGlobalSearch(){
 // ══════════════════════════════════
 window.addEventListener('DOMContentLoaded',function(){
   ge('btn-si').addEventListener('click',doLogin);
+  ge('btn-sr').addEventListener('click',doStaffRegister);
   ge('btn-rg').addEventListener('click',doRegister);
   ge('btn-pt').addEventListener('click',addPatient);
   ge('btn-opd').addEventListener('click',createOPDBill);
