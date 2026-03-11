@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 
+const paymentsRouter = require('./routes/payments');
 const app = express();
 
 /* =========================
@@ -101,7 +102,7 @@ loadRoute('/api/staff', './routes/staff');
 loadRoute('/api/inventory', './routes/inventory');
 loadRoute('/api/reports', './routes/reports');
 loadRoute('/api/dashboard', './routes/dashboard');
-
+loadRoute('/api/payments', './routes/payments');
 /* =========================
    FRONTEND FALLBACK
 ========================= */
