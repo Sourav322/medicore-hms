@@ -285,10 +285,8 @@ tr:hover td{background:rgba(14,165,233,.025);}
     <h1>MediCore HMS</h1>
     <p>Complete Hospital Management System</p>
   </div>
-  <div class="tab-row">
+  <div class="tab-row" style="justify-content:center;">
     <button class="tab-btn active" id="t-si" onclick="showTab('si')">Sign In</button>
-    <button class="tab-btn" id="t-rg" onclick="showTab('rg')">Register Hospital</button>
-    <button class="tab-btn" id="t-sr" onclick="showTab('sr')">Staff Register</button>
   </div>
 
   <!-- SIGN IN -->
@@ -299,6 +297,10 @@ tr:hover td{background:rgba(14,165,233,.025);}
     <label class="lbl">Password</label>
     <input id="si-pw" class="fld" type="password" placeholder="••••••••" autocomplete="current-password">
     <button class="btn-p" id="btn-si">🔑 Sign In</button>
+    <p style="text-align:center;font-size:11px;color:var(--t3);margin-top:12px">
+      New hospital? <a href="landing.html" style="color:var(--accent);font-weight:600">Register free →</a>
+      &nbsp;|&nbsp; Staff? <a href="landing.html" style="color:var(--accent);font-weight:600">Register here →</a>
+    </p>
   </div>
 
   <!-- REGISTER -->
@@ -364,6 +366,35 @@ tr:hover td{background:rgba(14,165,233,.025);}
 
 <!-- ═══════════════ APP ═══════════════ -->
 <div id="app">
+<div id="sub-banner" style="display:none;padding:8px 16px;font-size:12px;font-weight:600;color:#fff;text-align:center;position:sticky;top:0;z-index:200;"></div>
+
+<!-- SETUP WIZARD -->
+<div id="setup-wizard" style="display:none;position:fixed;inset:0;background:rgba(6,13,31,.97);z-index:9000;overflow-y:auto;padding:20px;">
+  <div style="max-width:460px;margin:40px auto;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:44px;margin-bottom:8px">🏥</div>
+      <h2 style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;margin-bottom:6px;color:var(--text)">Complete Your Setup</h2>
+      <p style="font-size:12px;color:var(--t2)">Quick 2-minute setup to go live!</p>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="wizStep(1)">
+      <div style="width:38px;height:38px;background:linear-gradient(135deg,var(--accent),#06b6d4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👨‍⚕️</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--text)">1. Add Doctors</div><div style="font-size:11px;color:var(--t2)">Add doctors to start OPD billing</div></div>
+      <span id="wstep-1-done" style="display:none;color:#10b981;font-size:16px">✅</span><span style="color:var(--t2)">→</span>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="wizStep(2)">
+      <div style="width:38px;height:38px;background:linear-gradient(135deg,var(--accent),#06b6d4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">👔</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--text)">2. Add Staff</div><div style="font-size:11px;color:var(--t2)">Receptionist, Lab Tech, Billing Staff</div></div>
+      <span id="wstep-2-done" style="display:none;color:#10b981;font-size:16px">✅</span><span style="color:var(--t2)">→</span>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="wizStep(3)">
+      <div style="width:38px;height:38px;background:linear-gradient(135deg,var(--accent),#06b6d4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💰</div>
+      <div style="flex:1"><div style="font-weight:700;font-size:13px;color:var(--text)">3. Set Service Rates</div><div style="font-size:11px;color:var(--t2)">OPD fee, lab rates, bed charges</div></div>
+      <span id="wstep-3-done" style="display:none;color:#10b981;font-size:16px">✅</span><span style="color:var(--t2)">→</span>
+    </div>
+    <button onclick="skipWizard()" style="width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),#06b6d4);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">🚀 Go to Dashboard</button>
+    <button onclick="skipWizard()" style="width:100%;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--t2);font-size:12px;cursor:pointer;font-family:inherit;">Skip for now</button>
+  </div>
+</div>
 <div class="layout">
   <!-- SIDEBAR -->
   <nav class="sidebar" id="sb">
@@ -827,7 +858,18 @@ function doLogin(){
       saveSess();launchApp();
       toast('Welcome, '+(res.user.name||'')+'! 👋','s');
     })
-    .catch(function(err){showErr('si-er',err.message||'Login failed');})
+    .catch(function(err){
+      var msg=err.message||'Login failed';
+      if(msg.indexOf('expired')>=0){
+        showErr('si-er',msg+' — <a href="landing.html#pricing" style="color:var(--accent)">Upgrade Plan →</a>');
+      } else if(msg.indexOf('pending')>=0||msg.indexOf('approval')>=0){
+        showErr('si-er','⏳ Your account is pending admin approval. Please wait or contact your Hospital Admin.');
+      } else if(msg.indexOf('rejected')>=0){
+        showErr('si-er','❌ Your registration was rejected. Contact your Hospital Admin.');
+      } else if(msg.indexOf('suspended')>=0){
+        showErr('si-er','⛔ Account suspended. Contact support: 7972425585');
+      } else { showErr('si-er',msg); }
+    })
     .finally(function(){btn.textContent='🔑 Sign In';btn.disabled=false;});
 }
 function doRegister(){
@@ -899,13 +941,46 @@ function launchApp(){
     if(logo){ge('sb-logo-img').src=logo;ge('sb-logo-img').style.display='block';ge('sb-logo-ico').style.display='none';}
   }
   ge('tb-date').textContent=today();
-  // Hide nav items based on role
   applyRoleNav();
-  // Show pending badge for admin
-  if(S.user&&S.user.role==='hospital_admin') loadPendingCount();
-  // Preload patients & doctors
+  checkSubscription();
+  if(S.user&&S.user.role==='hospital_admin'){loadPendingCount();checkShowWizard();}
   preload();
+  initGlobalSearch();
   nav('dashboard');
+}
+
+function checkSubscription(){
+  if(!S.hospital)return;
+  var status=S.hospital.subscriptionStatus||'trial';
+  var banner=ge('sub-banner');
+  if(!banner)return;
+  if(status==='trial'){
+    var trialEnd=S.hospital.trialEnd?new Date(S.hospital.trialEnd):null;
+    var daysLeft=trialEnd?Math.max(0,Math.ceil((trialEnd-new Date())/(1000*60*60*24))):0;
+    if(daysLeft<=7){
+      banner.innerHTML='⏳ Free trial ends in <strong>'+daysLeft+' day'+(daysLeft!==1?'s':'')+'</strong>. <a href="landing.html#pricing" style="color:#fff;font-weight:700;text-decoration:underline">Upgrade now →</a>';
+      banner.style.display='block';
+      banner.style.background='linear-gradient(90deg,#d97706,#f59e0b)';
+    }
+  } else if(status==='expired'){
+    banner.innerHTML='🔴 Subscription expired. <a href="landing.html#pricing" style="color:#fff;font-weight:700;text-decoration:underline">Renew to continue →</a>';
+    banner.style.display='block';
+    banner.style.background='linear-gradient(90deg,#991b1b,#ef4444)';
+  } else if(status==='suspended'){
+    banner.innerHTML='⛔ Account suspended. Contact support: 7972425585';
+    banner.style.display='block';
+    banner.style.background='linear-gradient(90deg,#1e1b4b,#4c1d95)';
+  } else if(status==='active'){
+    var subEnd=S.hospital.subscriptionEnd?new Date(S.hospital.subscriptionEnd):null;
+    if(subEnd){
+      var dLeft=Math.max(0,Math.ceil((subEnd-new Date())/(1000*60*60*24)));
+      if(dLeft<=7){
+        banner.innerHTML='⚠️ Subscription renews in <strong>'+dLeft+' day'+(dLeft!==1?'s':'')+'</strong>. <a href="landing.html#pricing" style="color:#fff;font-weight:700;text-decoration:underline">Renew →</a>';
+        banner.style.display='block';
+        banner.style.background='linear-gradient(90deg,#065f46,#059669)';
+      }
+    }
+  }
 }
 
 function applyRoleNav(){
@@ -1746,7 +1821,7 @@ function loadRates(btn,cat){
   rates.forEach(function(r){
     html+='<tr>'+
       '<td><strong>'+esc(r.name||'-')+'</strong></td>'+
-      '<td><span class="badge bl">'+esc(r.category||'-')+'</span></td>'+
+      '<td><span class="badge blue">'+esc(r.category||'-')+'</span></td>'+
       '<td><strong style="color:var(--green)">'+cur(r.rate||0)+'</strong></td>'+
       '<td style="font-size:11px;color:var(--t2)">'+esc(r.unit||'-')+'</td>'+
       '<td style="font-size:11px;color:var(--t2)">'+esc(r.description||'-')+'</td>'+
@@ -1761,7 +1836,7 @@ function loadRates(btn,cat){
 // STAFF
 PAGES.staff=function(){
   var isAdmin=S.user&&S.user.role==='hospital_admin';
-  ge('content').innerHTML='<div class="ph2"><span class="pt2">👔 All Staff</span>'+
+  ge('content').innerHTML='<div class="ph2"><span class="pt2">👔 All Staff</span>'+(isAdmin?'<button class="btn-n" onclick="openAddStaffModal()" style="margin-left:auto">➕ Add Staff</button>':'')+''+
     (isAdmin?'<button class="btn-n" onclick="nav(\'staff_approve\')">⏳ Pending Requests <span id="sb-pending" style="background:#ef4444;border-radius:10px;padding:1px 7px;font-size:10px;margin-left:4px">0</span></button>':'')+
   '</div>'+
     '<div class="sg sg-3" id="staff-stats"></div>'+
@@ -1787,7 +1862,7 @@ function loadAllStaff(q){
         '<div class="sc gr"><div class="sc-i">✅</div><div class="sc-v">'+active+'</div><div class="sc-l">Active</div></div>'+
         '<div class="sc or"><div class="sc-i">⏳</div><div class="sc-v">'+pending+'</div><div class="sc-l">Pending</div></div>';
       var el=ge('st-list');if(!el)return;
-      if(!staff.length){el.innerHTML='<div class="es"><div class="ei">👔</div><p>No staff members yet. Staff can register using the Staff Register tab on login page.</p></div>';return;}
+      if(!staff.length){el.innerHTML='<div class="es"><div class="ei">👔</div><p>No staff members yet. Click Add Staff above to add staff directly, or share Hospital Code for self-registration.</p></div>';return;}
       var html='<table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Dept</th><th>Phone</th><th>Last Login</th><th>Status</th>'+(isAdmin?'<th>Action</th>':'')+'</tr></thead><tbody>';
       staff.forEach(function(s){
         var st=s.status||'active';
@@ -1882,7 +1957,7 @@ PAGES.inventory=function(){
       '<div class="sc gr"><div class="sc-i">✅</div><div class="sc-v" id="inv-ok">-</div><div class="sc-l">In Stock</div></div>'+
     '</div>'+
     '<div class="tw"><div class="tw-h"><span class="tw-t">Stock Items</span>'+
-      '<div class="sbx">🔍 <input id="inv-sr" placeholder="Search item..." oninput="loadInventory(this.value)"></div>'+
+      '<div class="sb">🔍 <input id="inv-sr" placeholder="Search item..." oninput="loadInventory(this.value)"></div>'+
     '</div>'+
     '<div id="inv-list"><div class="ld"><div class="sp"></div></div></div></div>'+
     // Inventory Modal
@@ -1994,7 +2069,7 @@ function loadInventory(q){
           '<td><strong>'+esc(i.name||'-')+'</strong>'+(i.batchNo?'<br><span style="font-size:10px;color:var(--t3)">'+esc(i.batchNo)+'</span>':'')+
           (i.notes?'<br><span style="font-size:10px;color:var(--t3)">'+esc(i.notes)+'</span>':'')+
           '</td>'+
-          '<td><span class="badge bl">'+esc(i.category||'-')+'</span></td>'+
+          '<td><span class="badge blue">'+esc(i.category||'-')+'</span></td>'+
           '<td><strong style="color:'+(low2?'var(--red)':'var(--green)')+'">'+( i.quantity||0)+'</strong> '+esc(i.unit||'pcs')+'</td>'+
           '<td style="color:var(--t3)">'+( i.minStock||10)+'</td>'+
           '<td>'+cur(i.purchasePrice||0)+'</td>'+
@@ -2572,6 +2647,14 @@ function printBillData(b,title){
   setTimeout(function(){pb.style.display='none';},2000);
 }
 
+function printIPDReceipt(id){
+  var h=hid();if(!h)return;
+  api('GET','/ipd?hospitalId='+h+'&limit=200').then(function(res){
+    var adm=(res.admissions||[]).find(function(a){return a.id===id;});
+    if(adm) printAdmission(adm);
+    else toast('Admission not found','e');
+  }).catch(function(e){toast(e.message,'e');});
+}
 function printAdmission(adm){
   var h=S.hospital||{};var logo=getLogo();
   var logoHtml=logo?'<img src="'+logo+'" class="bph-logo">':'<div class="bph-logo-ph">🏥</div>';
@@ -2638,20 +2721,20 @@ function viewBillById(id){
   // Fetch bill data
   var billData = null;
   // Try billing first, then lab
-  Promise.any([
-    api('GET','/billing/'+id+'?hospitalId='+h),
-    api('GET','/laboratory/'+id+'?hospitalId='+h)
-  ]).then(function(res){
-    billData = res.bill || res.test || res;
-    renderBillInModal(billData);
-  }).catch(function(){
-    // Try direct
-    api('GET','/billing?hospitalId='+h+'&limit=500').then(function(res){
-      var bills=res.bills||[];
-      billData=bills.find(function(b){return b.id===id;})||null;
+  // Try billing first, fallback to lab
+  api('GET','/billing?hospitalId='+h+'&limit=500').then(function(res){
+    var bills=res.bills||[];
+    billData=bills.find(function(b){return b.id===id;})||null;
+    if(billData){ renderBillInModal(billData); return; }
+    // Try lab
+    api('GET','/laboratory?hospitalId='+h+'&limit=200').then(function(r){
+      var tests=r.tests||r.data||[];
+      billData=tests.find(function(t){return t.id===id;})||null;
       if(billData) renderBillInModal(billData);
       else ge('bill-view-body').innerHTML='<div style="text-align:center;padding:40px;color:red">Bill not found</div>';
     });
+  }).catch(function(){
+    ge('bill-view-body').innerHTML='<div style="text-align:center;padding:40px;color:red">Failed to load bill</div>';
   });
 }
 
@@ -2869,6 +2952,94 @@ window.addEventListener('DOMContentLoaded',function(){
     if(sess&&sess.u&&sess.u.token){S.user=sess.u;S.hospital=sess.h;launchApp();}
   }catch(x){}
 });
+
+// ── SETUP WIZARD ──
+function checkShowWizard(){
+  if(!S.hospital||!S.user)return;
+  if(S.user.role!=='hospital_admin')return;
+  // Show wizard if setup not complete
+  if(!S.hospital.setupComplete){
+    try{
+      var wizDone=localStorage.getItem('wiz_done_'+(S.hospital.id||''));
+      if(!wizDone) ge('setup-wizard').style.display='block';
+    }catch(x){}
+  }
+}
+function skipWizard(){
+  ge('setup-wizard').style.display='none';
+  try{localStorage.setItem('wiz_done_'+(S.hospital&&S.hospital.id||''),'1');}catch(x){}
+  // Mark setup complete in backend
+  if(S.hospital&&S.hospital.id&&S.user&&S.user.token){
+    api('POST','/auth/complete-setup',{hospitalId:S.hospital.id}).catch(function(){});
+    if(S.hospital) S.hospital.setupComplete=true;
+  }
+}
+function wizStep(n){
+  ge('setup-wizard').style.display='none';
+  if(n===1) nav('doctors');
+  else if(n===2) nav('staff');
+  else if(n===3) nav('ratechart');
+  // Mark that step was visited
+  try{localStorage.setItem('wiz_step'+n+'_'+(S.hospital&&S.hospital.id||''),'1');}catch(x){}
+  ge('wstep-'+n+'-done').style.display='inline';
+}
+
+// ── ADD STAFF DIRECTLY (Admin) ──
+function closeAddStaffModal(){var m=document.getElementById("add-staff-modal");if(m)m.remove();}
+function openAddStaffModal(){
+  var html='<div id="add-staff-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:8000;overflow-y:auto;padding:16px;">'+
+    '<div style="max-width:440px;margin:20px auto;background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;">'+
+    '<div style="background:linear-gradient(135deg,var(--accent),#06b6d4);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">'+
+    '<span style="font-family:Syne,sans-serif;font-size:14px;font-weight:800;color:#fff">Add Staff Member</span>'+
+    '<button onclick="closeAddStaffModal()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;">✕</button>'+
+    '</div>'+
+    '<div style="padding:16px;">'+
+    '<div id="as-err" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:7px;padding:9px;font-size:12px;color:#fca5a5;margin-bottom:10px;display:none;"></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+
+    '<div><label class="lbl">Name *</label><input id="as-nm" class="fld" placeholder="Full name"></div>'+
+    '<div><label class="lbl">Role *</label><select id="as-rl" class="fld">'+
+    '<option value="">Select Role</option>'+
+    '<option value="doctor">Doctor</option>'+
+    '<option value="receptionist">Receptionist</option>'+
+    '<option value="lab_technician">Lab Technician</option>'+
+    '<option value="billing_staff">Billing Staff</option>'+
+    '<option value="nurse">Nurse</option>'+
+    '<option value="pharmacist">Pharmacist</option>'+
+    '</select></div>'+
+    '</div>'+
+    '<label class="lbl">Phone</label><input id="as-ph" class="fld" type="tel" placeholder="9876543210">'+
+    '<label class="lbl">Department</label><input id="as-dp" class="fld" placeholder="e.g. Cardiology">'+
+    '<label class="lbl">Email *</label><input id="as-em" class="fld" type="email" placeholder="staff@hospital.com">'+
+    '<label class="lbl">Password *</label><input id="as-pw" class="fld" type="password" placeholder="Min 6 characters">'+
+    '<button onclick="doAddStaff()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),#06b6d4);border:none;border-radius:9px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;" id="as-btn">➕ Add Staff Member</button>'+
+    '</div></div></div>';
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function doAddStaff(){
+  var nm=(ge('as-nm').value||'').trim();
+  var rl=ge('as-rl').value;
+  var ph=(ge('as-ph').value||'').trim();
+  var dp=(ge('as-dp').value||'').trim();
+  var em=(ge('as-em').value||'').trim();
+  var pw=ge('as-pw').value||'';
+  var errEl=ge('as-err');
+  errEl.style.display='none';
+  if(!nm){errEl.textContent='Name required';errEl.style.display='block';return;}
+  if(!rl){errEl.textContent='Select role';errEl.style.display='block';return;}
+  if(!em){errEl.textContent='Email required';errEl.style.display='block';return;}
+  if(pw.length<6){errEl.textContent='Password min 6 characters';errEl.style.display='block';return;}
+  var btn=ge('as-btn');btn.textContent='⏳ Adding...';btn.disabled=true;
+  api('POST','/auth/add-staff',{name:nm,role:rl,phone:ph,department:dp,email:em,password:pw,hospitalId:hid()})
+  .then(function(r){
+    toast('Staff added: '+nm+' ✅','s');
+    document.getElementById('add-staff-modal').remove();
+    nav('staff');
+  })
+  .catch(function(e){errEl.textContent=e.message;errEl.style.display='block';})
+  .finally(function(){btn.textContent='➕ Add Staff Member';btn.disabled=false;});
+}
 </script>
 </body>
 </html>
+
